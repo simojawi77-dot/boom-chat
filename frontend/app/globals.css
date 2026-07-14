@@ -1,0 +1,58 @@
+
+:root {
+  --bg-dark: #0a0909;
+  --bg-light: #f3eafb;
+  --accent-light: #cbc803;
+  --accent-dark: #B911EC;
+  --bg-deep: #161516;
+  --text-primary-dark: #f2e5fc;
+  --text-primary-light:#13011c;
+  --text-muted: #720fea;
+  --model-dark: rgba(185, 17, 236, 0.053);
+  --model-light: rgba(203, 200, 3, 0.053);
+
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+}
+
+.appFooter {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding: 18px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.appFooter a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.appFooter a:hover {
+  color: var(--accent);
+}
+
+.appFooter .dot {
+  margin: 0 8px;
+}
+
+@keyframes appPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes appFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
