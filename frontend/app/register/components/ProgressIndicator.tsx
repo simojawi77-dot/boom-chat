@@ -15,7 +15,7 @@ export default function ProgressIndicator({ currentStep }: ProgressIndicatorProp
         Step {currentStep} of {TOTAL_STEPS}
       </div>
 
-      <ol className="grid grid-cols-5 items-start gap-2">
+      <ol className="grid grid-cols-5 items-start gap-2 sm:gap-3">
         {steps.map((step) => {
           const isCompleted = step < currentStep;
           const isCurrent = step === currentStep;
@@ -25,7 +25,7 @@ export default function ProgressIndicator({ currentStep }: ProgressIndicatorProp
               {step < TOTAL_STEPS && (
                 <span
                   className={[
-                    "absolute left-1/2 top-5 h-0.5 w-full translate-x-5 rounded-full transition duration-300",
+                    "absolute left-1/2 top-5 h-0.5 w-full translate-x-5 rounded-full transition duration-300 sm:top-6",
                     isCompleted ? "bg-[var(--accent)]" : "bg-[var(--border-soft)]",
                   ].join(" ")}
                   aria-hidden="true"
@@ -34,7 +34,7 @@ export default function ProgressIndicator({ currentStep }: ProgressIndicatorProp
 
               <span
                 className={[
-                  "relative z-10 grid h-10 w-10 place-items-center rounded-full border text-sm font-bold transition duration-300",
+                  "relative z-10 grid h-10 w-10 place-items-center rounded-full border text-sm font-bold transition duration-300 sm:h-12 sm:w-12",
                   isCurrent
                     ? "scale-105 border-[var(--accent)] bg-[var(--accent)] text-white shadow-lg shadow-purple-500/25"
                     : "",
