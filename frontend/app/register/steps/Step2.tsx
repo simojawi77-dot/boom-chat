@@ -18,7 +18,7 @@ export default function Step2() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-black tracking-normal text-[var(--text-primary)]">
+        <h1 className="text-3xl font-black tracking-normal text-[var(--text-primary)] sm:text-4xl">
           Tell us about you
         </h1>
 
@@ -96,6 +96,10 @@ export default function Step2() {
             <option value="fes">Fes</option>
             <option value="marrakech">Marrakech</option>
             <option value="casablanca">Casablanca</option>
+            <option value="tangier">Tangier</option>
+            <option value="agadir">Agadir</option>
+            <option value="rabat">Rabat</option>
+            <option value="meknes">Meknes</option>
           </select>
 
           <FormError message={errors.city?.message} />
