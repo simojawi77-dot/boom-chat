@@ -1,4 +1,6 @@
 
+@import "tailwindcss";
+
 :root {
   --bg-dark: #0a0909;
   --bg-light: #f3eafb;
@@ -10,7 +12,33 @@
   --text-muted: #720fea;
   --model-dark: rgba(185, 17, 236, 0.053);
   --model-light: rgba(203, 200, 3, 0.053);
+  --bg: var(--bg-light);
+  --accent: var(--accent-dark);
+  --model: var(--model-light);
+  --text-primary: var(--text-primary-light);
+  --text-secondary: rgba(19, 1, 28, 0.72);
+  --text-placeholder: rgba(19, 1, 28, 0.5);
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-strong: rgba(255, 255, 255, 0.94);
+  --border-soft: rgba(114, 15, 234, 0.18);
+  --shadow-soft: 0 28px 80px rgba(114, 15, 234, 0.14);
+  --input-bg: rgba(255, 255, 255, 0.72);
+  --input-border: rgba(114, 15, 234, 0.2);
+}
 
+.dark {
+  --bg: var(--bg-dark);
+  --accent: var(--accent-dark);
+  --model: var(--model-dark);
+  --text-primary: var(--text-primary-dark);
+  --text-secondary: rgba(242, 229, 252, 0.74);
+  --text-placeholder: rgba(242, 229, 252, 0.45);
+  --surface: rgba(22, 21, 22, 0.86);
+  --surface-strong: rgba(22, 21, 22, 0.96);
+  --border-soft: rgba(185, 17, 236, 0.32);
+  --shadow-soft: 0 28px 80px rgba(185, 17, 236, 0.22);
+  --input-bg: rgba(10, 9, 9, 0.62);
+  --input-border: rgba(185, 17, 236, 0.28);
 }
 
 * {
@@ -21,8 +49,9 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-  background: var(--bg-deep);
+  background: var(--bg);
   color: var(--text-primary);
+  transition: background-color 240ms ease, color 240ms ease;
 }
 
 .appFooter {

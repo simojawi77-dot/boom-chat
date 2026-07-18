@@ -1,100 +1,106 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
+import type { RegisterData } from "@/schemas/registerSchema";
 import FormError from "../../components/FormError";
+import {
+  fieldLabelClassName,
+  getFieldControlClassName,
+  stepIntroClassName,
+} from "../components/formStyles";
 
 export default function Step2() {
   const {
     register,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<RegisterData>();
 
   return (
-    <div>
-      <label htmlFor="dateOfBirth">
-        Date of Birth
-      </label>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-black tracking-normal text-[var(--text-primary)]">
+          Tell us about you
+        </h1>
 
-      <input
-        type="date"
-        id="dateOfBirth"
-        className={`w-full rounded-md border p-2 ${
-          errors.dateOfBirth
-            ? "border-red-500"
-            : "border-gray-300"
-        }`}
-        {...register("dateOfBirth")}
-      />
+        <p className={stepIntroClassName}>
+          Add the basics for your profile.
+        </p>
+      </div>
 
-      <FormError
-        message={errors.dateOfBirth?.message}
-      />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label htmlFor="firstName" className={fieldLabelClassName}>
+            First Name
+          </label>
 
+          <input
+            type="text"
+            id="firstName"
+            autoComplete="given-name"
+            placeholder="Enter your first name"
+            className={getFieldControlClassName(Boolean(errors.firstName))}
+            {...register("firstName")}
+          />
 
-      <label htmlFor="gender">
-        Gender <span className="text-red-500">*</span>
-      </label>
+          <FormError message={errors.firstName?.message} />
+        </div>
 
-      <select
-        id="gender"
-        className={`w-full rounded-md border p-2 ${
-          errors.gender
-            ? "border-red-500"
-            : "border-gray-300"
-        }`}
-        {...register("gender")}
-      >
-        <option value="">
-          Select Gender
-        </option>
+        <div>
+          <label htmlFor="lastName" className={fieldLabelClassName}>
+            Last Name
+          </label>
 
-        <option value="male">
-          Male
-        </option>
+          <input
+            type="text"
+            id="lastName"
+            autoComplete="family-name"
+            placeholder="Enter your last name"
+            className={getFieldControlClassName(Boolean(errors.lastName))}
+            {...register("lastName")}
+          />
 
-        <option value="female">
-          Female
-        </option>
-      </select>
+          <FormError message={errors.lastName?.message} />
+        </div>
+      </div>
 
-      <FormError
-        message={errors.gender?.message}
-      />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label htmlFor="gender" className={fieldLabelClassName}>
+            Gender
+          </label>
 
+          <select
+            id="gender"
+            className={getFieldControlClassName(Boolean(errors.gender))}
+            {...register("gender")}
+          >
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
 
-      <label htmlFor="city">
-        City <span className="text-red-500">*</span>
-      </label>
+          <FormError message={errors.gender?.message} />
+        </div>
 
-      <select
-        id="city"
-        className={`w-full rounded-md border p-2 ${
-          errors.city
-            ? "border-red-500"
-            : "border-gray-300"
-        }`}
-        {...register("city")}
-      >
-        <option value="">
-          Select City
-        </option>
+        <div>
+          <label htmlFor="city" className={fieldLabelClassName}>
+            City
+          </label>
 
-        <option value="fes">
-          Fes
-        </option>
+          <select
+            id="city"
+            className={getFieldControlClassName(Boolean(errors.city))}
+            {...register("city")}
+          >
+            <option value="">Select city</option>
+            <option value="fes">Fes</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="casablanca">Casablanca</option>
+          </select>
 
-        <option value="marrakech">
-          Marrakech
-        </option>
-
-        <option value="casablanca">
-          Casablanca
-        </option>
-      </select>
-
-      <FormError
-        message={errors.city?.message}
-      />
+          <FormError message={errors.city?.message} />
+        </div>
+      </div>
     </div>
   );
 }
