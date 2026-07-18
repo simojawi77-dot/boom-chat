@@ -83,7 +83,7 @@ const Register = () => {
   return (
     <>
       <div>
-        <FormProvider {...form}>
+        <FormProvider {...form} onSubmit={hundlesubmit}>
           {step === 1 && <Step1 />}
           {step === 2 && <Step2 />}
           {step === 3 && <Step3 />}
@@ -97,6 +97,11 @@ const Register = () => {
         {step < 5 && (
           <button onClick={nextStep}>
             Next
+          </button>
+        )}
+        {step === 5 && (
+          <button>
+            Submit
           </button>
         )}
 
