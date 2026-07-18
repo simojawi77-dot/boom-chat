@@ -42,7 +42,7 @@ export default function Step4({ onPasswordAvatarStateChange }: Step4Props) {
 
         <p className={stepIntroClassName}>
           Create a strong password. The avatar will look away while you type.
-        </p>
+        </p><div></div>
       </div>
 
       <div>
