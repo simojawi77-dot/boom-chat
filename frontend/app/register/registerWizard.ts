@@ -55,20 +55,26 @@ type AvatarStage = {
 };
 
 const avatarStages: AvatarStage[] = [
-  { maxAge: 1, label: "1 year", source: "/avatars/1year.png" },
-  { maxAge: 2, label: "2 years", source: "/avatars/2years.png" },
-  { maxAge: 11, label: "11 years", source: "/avatars/11years.png" },
-  { maxAge: 18, label: "18 years", source: "/avatars/18years.png" },
-  { maxAge: 25, label: "18-25", source: "/avatars/25years.png" },
-  { maxAge: Number.POSITIVE_INFINITY, label: "27+", source: "/avatars/27plus.png" },
+  { maxAge: 1, label: "1 year", source: "/Avatars/1year.png" },
+  { maxAge: 2, label: "2 years", source: "/Avatars/2years.png" },
+  { maxAge: 11, label: "11 years", source: "/Avatars/11years.png" },
+  { maxAge: 18, label: "18 years", source: "/Avatars/18years.png" },
+  { maxAge: 25, label: "18-25", source: "/Avatars/25years.png" },
+  { maxAge: Number.POSITIVE_INFINITY, label: "27+", source: "/Avatars/27plus.png" },
 ];
 
+// الحصول على مؤشر المرحلة حسب العمر
 const getTargetAvatarStageIndex = (age?: number) => {
   if (typeof age !== "number") {
-    return avatarStages.length - 1;
+    return 0; // البدء من 1year إذا لم يتم اختيار عمر
   }
 
   return avatarStages.findIndex((stage) => age <= stage.maxAge);
+};
+
+// الحصول على مؤشر المرحلة حسب خطوة التسجيل (النمو التدريجي)
+const getStepStageIndex = (step: RegisterStep): number => {
+  return Math.min(step - 1, avatarStages.length - 1);
 };
 
 export const getAvatarDisplay = (
@@ -76,19 +82,30 @@ export const getAvatarDisplay = (
   age?: number,
   passwordState: PasswordAvatarState = "open",
 ) => {
-  const stepStageIndex = Math.min(step - 1, avatarStages.length - 1);
+  const stepStageIndex = getStepStageIndex(step);
   const targetStageIndex = getTargetAvatarStageIndex(age);
-  const stage = avatarStages[Math.min(stepStageIndex, targetStageIndex)];
+  
+  // اختيار أقل مرحلة بين مرحلة الخطوة والعمر
+  // بحيث الأفتار ينمو مع كل خطوة لكن لا يتجاوز عمر المستخدم
+  const stageIndex = Math.min(stepStageIndex, targetStageIndex);
+  const stage = avatarStages[stageIndex];
 
-  if (stage.maxAge === 18) {
+  // تطبيق حالة كلمة المرور على مرحلة 18 سنة فقط (Step 4)
+  if (stage.maxAge === 18 && step === 4) {
     if (passwordState === "half") {
-      return { ...stage, source: "/avatars/18-half.png" };
+      return { ...stage, source: "/Avatars/18-half.png" };
     }
 
     if (passwordState === "closed") {
-      return { ...stage, source: "/avatars/18-close.png" };
+      return { ...stage, source: "/Avatars/18-close.png" };
     }
   }
 
   return stage;
+};
+
+// دالة مساعدة للحصول على مصدر الصورة فقط (للتوافق مع الكود القديم)
+export const getAvatarSource = (age?: number, isPasswordFocused?: boolean): string => {
+  // هذه الدالة لم تعد مستخدمة، لكن نحتفظ بها للتوافق
+  return getAvatarDisplay(1, age).source;
 };
