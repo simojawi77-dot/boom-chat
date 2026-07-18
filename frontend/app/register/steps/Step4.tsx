@@ -36,13 +36,13 @@ export default function Step4({ onPasswordAvatarStateChange }: Step4Props) {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-black tracking-normal text-[var(--text-primary)]">
+        <h1 className="text-3xl font-black tracking-normal text-[var(--text-primary)] sm:text-4xl">
           Secure your account
         </h1>
 
         <p className={stepIntroClassName}>
           Create a strong password. The avatar will look away while you type.
-        </p><div></div>
+        </p>
       </div>
 
       <div>
