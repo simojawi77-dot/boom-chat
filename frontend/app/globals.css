@@ -8,7 +8,7 @@
   --accent-dark: #B911EC;
   --bg-deep: #161516;
   --text-primary-dark: #f2e5fc;
-  --text-primary-light:#13011c;
+  --text-primary-light: #13011c;
   --text-muted: #720fea;
   --model-dark: rgba(185, 17, 236, 0.053);
   --model-light: rgba(203, 200, 3, 0.053);
@@ -52,6 +52,37 @@ body {
   background: var(--bg);
   color: var(--text-primary);
   transition: background-color 240ms ease, color 240ms ease;
+}
+
+/* Light mode text visibility improvements */
+.light {
+  --text-secondary: rgba(19, 1, 28, 0.85);
+  --text-placeholder: rgba(19, 1, 28, 0.65);
+}
+
+/* Ensure text is visible in light mode */
+.light input,
+.light textarea,
+.light select,
+.light button {
+  color: var(--text-primary);
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: var(--text-placeholder);
+}
+
+.light label,
+.light p,
+.light span,
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6 {
+  color: var(--text-primary);
 }
 
 .appFooter {
