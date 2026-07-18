@@ -18,7 +18,7 @@ export default function Step3() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-black tracking-normal text-[var(--text-primary)]">
+        <h1 className="text-3xl font-black tracking-normal text-[var(--text-primary)] sm:text-4xl">
           How can we reach you?
         </h1>
 
