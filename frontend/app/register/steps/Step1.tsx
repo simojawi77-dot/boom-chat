@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { useFormContext, useWatch } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import type { RegisterData } from "@/schemas/registerSchema";
 import FormError from "../../components/FormError";
-import { calculateAge } from "../registerWizard";
 import {
-  fieldHintClassName,
   fieldLabelClassName,
   getFieldControlClassName,
   stepIntroClassName,
@@ -20,23 +17,31 @@ export default function Step1() {
     formState: { errors },
   } = useFormContext<RegisterData>();
 
-  const dateOfBirth = useWatch({
-    control,
-    name: "dateOfBirth",
-  });
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateStr = e.target.value;
+    register("dateOfBirth").onChange(e);
 
-  const calculatedAge = calculateAge(dateOfBirth);
+    if (dateStr) {
+      const birthDate = new Date(dateStr);
+      if (!Number.isNaN(birthDate.getTime())) {
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const birthdayHasNotPassed =
+          today.getMonth() < birthDate.getMonth() ||
+          (today.getMonth() === birthDate.getMonth() &&
+            today.getDate() < birthDate.getDate());
 
-  useEffect(() => {
-    setValue(
-      "age",
-      calculatedAge ?? (undefined as unknown as RegisterData["age"]),
-      {
-        shouldDirty: Boolean(dateOfBirth),
-        shouldValidate: Boolean(dateOfBirth),
-      },
-    );
-  }, [calculatedAge, dateOfBirth, setValue]);
+        if (birthdayHasNotPassed) {
+          age -= 1;
+        }
+
+        setValue("age", age >= 0 ? age : (undefined as unknown as RegisterData["age"]), {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -60,13 +65,15 @@ export default function Step1() {
           id="dateOfBirth"
           className={getFieldControlClassName(Boolean(errors.dateOfBirth))}
           max={new Date().toISOString().split("T")[0]}
-          {...register("dateOfBirth")}
+          {...register("dateOfBirth", {
+            onChange: handleDateChange,
+          })}
         />
 
         <FormError message={errors.dateOfBirth?.message} />
         <FormError message={errors.age?.message} />
 
-        <p className={fieldHintClassName}>
+        <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
           We never ask you to enter your age manually.
         </p>
       </div>
