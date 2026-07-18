@@ -2,25 +2,17 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import BoomLogo from "../components/BoomLogo";
+import { useTheme } from "next-themes";
+import BoomLogo from "./BoomLogo";
 import styles from "../styles/login.module.css";
 
-type Theme = "light" | "dark";
-
-type NavbarProps = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-};
-
-export default function Navbar({
-  theme,
-  setTheme,
-}: NavbarProps) {
+export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className={styles.topbar}>
-      <div className="logo">
+      <div className={styles.logo}>
         <BoomLogo />
       </div>
 
@@ -31,30 +23,34 @@ export default function Navbar({
 
       <div className={styles.menuWrap}>
         <button
-          className={`${styles.bubble} ${
-            menuOpen ? styles.popped : ""
-          }`}
-          aria-label="القائمة"
+          className={`${styles.bubble} ${menuOpen ? styles.popped : ""}`}
+          aria-label="Menu"
           onClick={() => setMenuOpen((v) => !v)}
         />
 
         {menuOpen && (
           <div className={styles.settingsPanel}>
-            <p className={styles.settingsTitle}>الإعدادات</p>
+            <p className={styles.settingsTitle}>Settings</p>
 
             <div className={styles.themeToggle}>
               <button
                 className={theme === "light" ? styles.active : ""}
-                onClick={() => setTheme("light")}
+                onClick={() => {
+                  setTheme("light");
+                  setMenuOpen(false);
+                }}
               >
-                الوضع الصباحي
+                ☀️ Light Mode
               </button>
 
               <button
                 className={theme === "dark" ? styles.active : ""}
-                onClick={() => setTheme("dark")}
+                onClick={() => {
+                  setTheme("dark");
+                  setMenuOpen(false);
+                }}
               >
-                الوضع الداكن
+                🌙 Dark Mode
               </button>
             </div>
           </div>
