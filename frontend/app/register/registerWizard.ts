@@ -63,16 +63,16 @@ const avatarStages: AvatarStage[] = [
   { maxAge: Number.POSITIVE_INFINITY, label: "27+", source: "/Avatars/27plus.png" },
 ];
 
-// الحصول على مؤشر المرحلة حسب العمر
+// Get avatar stage index based on age
 const getTargetAvatarStageIndex = (age?: number) => {
   if (typeof age !== "number") {
-    return 0; // البدء من 1year إذا لم يتم اختيار عمر
+    return 0; // Start from 1year if no age is selected
   }
 
   return avatarStages.findIndex((stage) => age <= stage.maxAge);
 };
 
-// الحصول على مؤشر المرحلة حسب خطوة التسجيل (النمو التدريجي)
+// Get avatar stage index based on registration step (progressive growth)
 const getStepStageIndex = (step: RegisterStep): number => {
   return Math.min(step - 1, avatarStages.length - 1);
 };
@@ -84,13 +84,13 @@ export const getAvatarDisplay = (
 ) => {
   const stepStageIndex = getStepStageIndex(step);
   const targetStageIndex = getTargetAvatarStageIndex(age);
-  
-  // اختيار أقل مرحلة بين مرحلة الخطوة والعمر
-  // بحيث الأفتار ينمو مع كل خطوة لكن لا يتجاوز عمر المستخدم
+
+  // Select the minimum stage between step stage and age stage
+  // Avatar grows with each step but never exceeds the user's age
   const stageIndex = Math.min(stepStageIndex, targetStageIndex);
   const stage = avatarStages[stageIndex];
 
-  // تطبيق حالة كلمة المرور على مرحلة 18 سنة فقط (Step 4)
+  // Apply password state only to 18-year stage (Step 4)
   if (stage.maxAge === 18 && step === 4) {
     if (passwordState === "half") {
       return { ...stage, source: "/Avatars/18-half.png" };
@@ -104,8 +104,8 @@ export const getAvatarDisplay = (
   return stage;
 };
 
-// دالة مساعدة للحصول على مصدر الصورة فقط (للتوافق مع الكود القديم)
-export const getAvatarSource = (age?: number, isPasswordFocused?: boolean): string => {
-  // هذه الدالة لم تعد مستخدمة، لكن نحتفظ بها للتوافق
+// Helper function to get avatar source only (for backward compatibility)
+export const getAvatarSource = (age?: number): string => {
+  // This function is kept for compatibility
   return getAvatarDisplay(1, age).source;
 };
