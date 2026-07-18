@@ -2,8 +2,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: min(42vw, 180px);
-  min-width: 120px;
+  width: 100%;
+  max-width: 220px;
   aspect-ratio: 1;
   margin-inline: auto;
 }
@@ -102,6 +102,7 @@
     background-color 240ms ease,
     color 240ms ease,
     border-color 240ms ease;
+  white-space: nowrap;
 }
 
 @keyframes avatarArrival {
@@ -159,5 +160,26 @@
   .avatarGlow {
     animation: none;
     transition: none;
+  }
+}
+
+/* Responsive design for large screens */
+@media (min-width: 1024px) {
+  .avatarStage {
+    max-width: 250px;
+    height: 250px;
+  }
+}
+
+/* Responsive design for small screens */
+@media (max-width: 640px) {
+  .avatarStage {
+    max-width: 160px;
+    height: 160px;
+  }
+
+  .ageChip {
+    font-size: 0.65rem;
+    padding: 0.4rem 0.56rem;
   }
 }
