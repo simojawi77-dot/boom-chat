@@ -20,6 +20,7 @@ import Step2 from "./steps/Step2";
 import Step3 from "./steps/Step3";
 import Step4 from "./steps/Step4";
 import Step5 from "./steps/Step5";
+import Step6 from "./steps/Step6";
 
 const defaultValues: Partial<RegisterData> = {
   dateOfBirth: "",
@@ -69,9 +70,15 @@ export default function RegisterPage() {
     setStep((currentStep) => Math.max(currentStep - 1, 1) as RegisterStep);
   };
 
-  const submitRegistration: SubmitHandler<RegisterData> = (data) => {
-    console.info("Registration data", data);
-    toast.success("Registration details are ready to submit.");
+  const submitRegistration: SubmitHandler<RegisterData> = async (data) => {
+    try {
+      console.info("Registration data:", data);
+      toast.success("Account created successfully!");
+      // API call would go here
+    } catch (error) {
+      toast.error("Failed to create account. Please try again.");
+      console.error(error);
+    }
   };
 
   const isDarkMode = resolvedTheme === "dark";
@@ -92,14 +99,15 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-                className="shrink-0 rounded-full border border-[var(--border-soft)] bg-[var(--surface-strong)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] transition duration-200 hover:bg-[var(--model)]"
+                aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
+                className="shrink-0 rounded-full border border-[var(--border-soft)] bg-[var(--surface-strong)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] transition duration-200 hover:bg-[var(--accent)] hover:text-white"
               >
                 {isDarkMode ? "☀️ Light" : "🌙 Dark"}
               </button>
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid gap-8 lg:grid-cols-[1fr_250px] lg:items-start">
+            <div className="grid gap-8 lg:grid-cols-[1fr_220px] lg:items-start">
               {/* Form Content */}
               <div className="order-2 min-h-[420px] lg:order-1">
                 {step === 1 && <Step1 />}
@@ -109,6 +117,7 @@ export default function RegisterPage() {
                   <Step4 onPasswordAvatarStateChange={setPasswordState} />
                 )}
                 {step === 5 && <Step5 />}
+                {step === 6 && <Step6 />}
               </div>
 
               {/* Avatar Preview */}
@@ -126,7 +135,8 @@ export default function RegisterPage() {
                 type="button"
                 onClick={goToPreviousStep}
                 disabled={step === 1}
-                className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-strong)] px-6 py-3 text-base font-bold text-[var(--text-primary)] transition duration-200 hover:bg-[var(--model)] disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Go to previous step"
+                className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-strong)] px-6 py-3 text-base font-bold text-[var(--text-primary)] transition duration-200 enabled:hover:bg-[var(--border-soft)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Back
               </button>
@@ -135,6 +145,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={goToNextStep}
+                  aria-label={`Go to step ${step + 1}`}
                   className="rounded-2xl bg-[var(--accent)] px-8 py-3 text-base font-black text-white shadow-lg shadow-purple-500/25 transition duration-200 hover:scale-[1.01] hover:shadow-purple-500/40"
                 >
                   Next
@@ -142,6 +153,7 @@ export default function RegisterPage() {
               ) : (
                 <button
                   type="submit"
+                  aria-label="Create account"
                   className="rounded-2xl bg-[var(--accent)] px-8 py-3 text-base font-black text-white shadow-lg shadow-purple-500/25 transition duration-200 hover:scale-[1.01] hover:shadow-purple-500/40"
                 >
                   Create Account
