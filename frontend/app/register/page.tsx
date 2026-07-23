@@ -3,8 +3,10 @@
 import { FormProvider, SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import { registerUser, storeAuthTokens } from "@/lib/api";
 import { registerSchema, type RegisterData } from "@/schemas/registerSchema";
 import AvatarPreview from "./components/AvatarPreview";
 import ProgressIndicator from "./components/ProgressIndicator";
@@ -36,7 +38,9 @@ const defaultValues: Partial<RegisterData> = {
 export default function RegisterPage() {
   const [step, setStep] = useState<RegisterStep>(1);
   const [passwordState, setPasswordState] = useState<PasswordAvatarState>("open");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
+  const router = useRouter();
 
   const form = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
@@ -71,13 +75,26 @@ export default function RegisterPage() {
   };
 
   const submitRegistration: SubmitHandler<RegisterData> = async (data) => {
+    setIsSubmitting(true);
+
     try {
-      console.info("Registration data:", data);
+      const username = `${data.firstName} ${data.lastName}`.trim().slice(0, 30) || data.email.split("@")[0];
+      const result = await registerUser({
+        username,
+        email: data.email,
+        password: data.password,
+      });
+
+      storeAuthTokens(result);
       toast.success("Account created successfully!");
-      // API call would go here
+      router.push("/");
     } catch (error) {
-      toast.error("Failed to create account. Please try again.");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create account. Please try again."
+      );
       console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -154,9 +171,10 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   aria-label="Create account"
-                  className="rounded-2xl bg-[var(--accent)] px-8 py-3 text-base font-black text-white shadow-lg shadow-purple-500/25 transition duration-200 hover:scale-[1.01] hover:shadow-purple-500/40"
+                  disabled={isSubmitting}
+                  className="rounded-2xl bg-[var(--accent)] px-8 py-3 text-base font-black text-white shadow-lg shadow-purple-500/25 transition duration-200 hover:scale-[1.01] hover:shadow-purple-500/40 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Create Account
+                  {isSubmitting ? "Creating account..." : "Create Account"}
                 </button>
               )}
             </div>
