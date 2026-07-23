@@ -12,16 +12,10 @@ export default function Page() {
     <main
       style={{
         minHeight: "100vh",
-        background:
-          theme === "dark"
-            ? "var(--bg-dark)"
-            : "var(--bg-light)",
+        background: theme === "dark" ? "var(--bg-dark)" : "var(--bg-light)",
       }}
     >
-      <Navbar
-        theme={theme}
-        setTheme={setTheme}
-      />
+      <Navbar theme={theme} setTheme={setTheme} />
 
       <section
         style={{
