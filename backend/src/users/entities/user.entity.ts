@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { GroupMember } from '../../groups/entities/group-member.entity';
 
 @Entity('users')
 export class User {
@@ -40,4 +42,7 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => GroupMember, (member) => member.user)
+  groupMemberships: GroupMember[];
 }

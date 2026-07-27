@@ -35,6 +35,24 @@ const defaultValues: Partial<RegisterData> = {
   phone: "",
 };
 
+const createUniqueUsername = (data: RegisterData) => {
+  const baseName =
+    `${data.firstName} ${data.lastName}`.trim().replace(/\s+/g, "_") ||
+    data.email.split("@")[0] ||
+    "user";
+
+  const cleanBase = baseName
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const shortBase = cleanBase.slice(0, 20) || "user";
+  const suffix = Math.random().toString(36).slice(2, 8);
+
+  return `${shortBase}_${suffix}`.slice(0, 30);
+};
+
 export default function RegisterPage() {
   const [step, setStep] = useState<RegisterStep>(1);
   const [passwordState, setPasswordState] = useState<PasswordAvatarState>("open");
@@ -78,7 +96,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const username = `${data.firstName} ${data.lastName}`.trim().slice(0, 30) || data.email.split("@")[0];
+      const username = createUniqueUsername(data);
       const result = await registerUser({
         username,
         email: data.email,
