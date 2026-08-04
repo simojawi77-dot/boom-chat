@@ -26,8 +26,8 @@ npm run dev
 ```
 
 This will start:
-- **Backend**: http://localhost:3000
-- **Frontend**: http://localhost:3001
+- **Backend**: http://localhost:4000
+- **Frontend**: http://localhost:3000
 - **PostgreSQL**: localhost:5432
 
 To stop services:
@@ -55,9 +55,9 @@ npm run dev
 
 ### Backend (.env.local)
 ```
-PORT=3000
+PORT=4000
 NODE_ENV=development
-FRONTEND_URL=http://localhost:3001
+FRONTEND_URL=http://localhost:3000
 DB_HOST=db
 DB_PORT=5432
 DB_USERNAME=postgres
@@ -72,7 +72,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ### Frontend (.env.local)
 ```
-NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 
 ## Features
@@ -146,7 +146,7 @@ For production deployment:
 ```bash
 # Check what's using the port
 lsof -i :3000
-lsof -i :3001
+lsof -i :4000
 lsof -i :5432
 
 # Kill process using port

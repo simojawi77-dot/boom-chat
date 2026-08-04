@@ -1,8 +1,13 @@
-import { IsString, IsUUID, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class CreateMessageDto {
+  @IsOptional()
   @IsUUID()
-  receiverId: string;
+  receiverId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  groupId?: string;
 
   @IsString()
   @MinLength(1)

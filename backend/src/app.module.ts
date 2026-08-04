@@ -11,7 +11,10 @@ import { ProfileModule } from './profile/profile.module';
 import { UploadModule } from './upload/upload.module';
 import { User } from './users/entities/user.entity';
 import { Message } from './chat/entities/message.entity';
+import { Group } from './groups/entities/group.entity';
+import { GroupMember } from './groups/entities/group-member.entity';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
@@ -25,13 +28,14 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
-        entities: [User, Message],
+        entities: [User, Message, Group, GroupMember],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),
     }),
     UsersModule,
     AuthModule,
     ChatModule,
+    GroupsModule,
     ProfileModule,
     UploadModule,
   ],
