@@ -15,7 +15,10 @@ export default function Page() {
         background: theme === "dark" ? "var(--bg-dark)" : "var(--bg-light)",
       }}
     >
-      <Navbar theme={theme} setTheme={setTheme} />
+      <Navbar
+        theme={theme}
+        setTheme={setTheme}
+      />
 
       <section
         style={{

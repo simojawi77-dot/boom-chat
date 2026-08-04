@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import styles from "../styles/login.module.css";
 import Navbar from "../components/Navbar";
+import { loginUser, storeAuthTokens } from "@/lib/api";
 
 type Theme = "light" | "dark";
 
@@ -18,6 +21,10 @@ const SHARDS = [
 export default function LoginPage() {
   const [phase, setPhase] = useState<"idle" | "spin" | "exploded">("idle");
   const [theme, setTheme] = useState<Theme>("dark");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const animationStart = setTimeout(() => setPhase("spin"), 50);
@@ -63,10 +70,7 @@ export default function LoginPage() {
     >
       <div className={styles.bgGlow} />
 
-      <Navbar
-        theme={theme}
-        setTheme={setTheme}
-      />
+      <Navbar />
 
       <main className={styles.stage}>
         <div
@@ -98,14 +102,34 @@ export default function LoginPage() {
           className={`${styles.card} ${
             phase === "exploded" ? styles.show : ""
           }`}
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setIsSubmitting(true);
+
+            try {
+              const result = await loginUser(email, password);
+              storeAuthTokens(result);
+              toast.success("Login successful");
+              router.push("/");
+            } catch (error) {
+              toast.error(
+                error instanceof Error ? error.message : "Login failed"
+              );
+            } finally {
+              setIsSubmitting(false);
+            }
+          }}
         >
           <label className={styles.field}>
             <span>Phone Number or Email Address</span>
 
             <input
-              type="text"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               placeholder="name@example.com"
               autoComplete="username"
+              required
             />
           </label>
 
@@ -114,16 +138,20 @@ export default function LoginPage() {
 
             <input
               type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               placeholder="••••••••"
               autoComplete="current-password"
+              required
             />
           </label>
 
           <button
             type="submit"
             className={styles.submit}
+            disabled={isSubmitting}
           >
-            Sign In
+            {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </main>

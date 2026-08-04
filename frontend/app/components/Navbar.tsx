@@ -6,9 +6,19 @@ import { useTheme } from "next-themes";
 import BoomLogo from "./BoomLogo";
 import styles from "../styles/login.module.css";
 
-export default function Navbar() {
+interface NavbarProps {
+  theme?: string;
+  setTheme?: (theme: string) => void;
+}
+
+export default function Navbar({
+  theme: controlledTheme,
+  setTheme: setControlledTheme,
+}: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme: resolvedTheme, setTheme: setResolvedTheme } = useTheme();
+  const currentTheme = controlledTheme ?? resolvedTheme;
+  const setTheme = setControlledTheme ?? setResolvedTheme;
 
   return (
     <header className={styles.topbar}>
@@ -34,7 +44,7 @@ export default function Navbar() {
 
             <div className={styles.themeToggle}>
               <button
-                className={theme === "light" ? styles.active : ""}
+                className={currentTheme === "light" ? styles.active : ""}
                 onClick={() => {
                   setTheme("light");
                   setMenuOpen(false);
@@ -44,7 +54,7 @@ export default function Navbar() {
               </button>
 
               <button
-                className={theme === "dark" ? styles.active : ""}
+                className={currentTheme === "dark" ? styles.active : ""}
                 onClick={() => {
                   setTheme("dark");
                   setMenuOpen(false);

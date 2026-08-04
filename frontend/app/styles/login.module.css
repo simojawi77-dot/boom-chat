@@ -40,6 +40,34 @@
   gap: 1rem;
 }
 
+/* Mobile-friendly topbar spacing */
+@media (max-width: 640px) {
+  .topbar {
+    height: 56px;
+    padding: 0 12px;
+    gap: 0.5rem;
+  }
+
+  .navLinks {
+    gap: 0.25rem;
+  }
+
+  .navLinks a {
+    font-size: 0.8rem;
+    padding: 0.45rem 0.6rem;
+  }
+
+  .bubble {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* Keep settings panel within viewport on small screens */
+  .settingsPanel {
+    right: -4px;
+  }
+}
+
 .navLinks a {
   color: var(--text-primary);
   text-decoration: none;

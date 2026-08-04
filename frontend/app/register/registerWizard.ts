@@ -55,12 +55,12 @@ type AvatarStage = {
 };
 
 const avatarStages: AvatarStage[] = [
-  { maxAge: 1, label: "1 year", source: "/Avatars/1year.png" },
-  { maxAge: 2, label: "2 years", source: "/Avatars/2years.png" },
-  { maxAge: 11, label: "11 years", source: "/Avatars/11years.png" },
-  { maxAge: 18, label: "18 years", source: "/Avatars/18years.png" },
-  { maxAge: 25, label: "18-25", source: "/Avatars/25years.png" },
-  { maxAge: Number.POSITIVE_INFINITY, label: "27+", source: "/Avatars/27plus.png" },
+  { maxAge: 1, label: "1 year", source: "/avatars/1year.png" },
+  { maxAge: 2, label: "2 years", source: "/avatars/2years.png" },
+  { maxAge: 11, label: "11 years", source: "/avatars/11years.png" },
+  { maxAge: 18, label: "18 years", source: "/avatars/18years.png" },
+  { maxAge: 25, label: "18-25", source: "/avatars/25years.png" },
+  { maxAge: Number.POSITIVE_INFINITY, label: "27+", source: "/avatars/27plus.png" },
 ];
 
 // Get avatar stage index based on age
@@ -93,11 +93,11 @@ export const getAvatarDisplay = (
   // Apply password state only to 18-year stage (Step 4)
   if (stage.maxAge === 18 && step === 4) {
     if (passwordState === "half") {
-      return { ...stage, source: "/Avatars/18-half.png" };
+      return { ...stage, source: "/avatars/18-half.png" };
     }
 
     if (passwordState === "closed") {
-      return { ...stage, source: "/Avatars/18-close.png" };
+      return { ...stage, source: "/avatars/18-close.png" };
     }
   }
 

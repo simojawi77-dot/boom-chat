@@ -1,0 +1,18 @@
+{
+  "name": "boom-chat",
+  "version": "1.0.0",
+  "description": "A full-stack chat application with NestJS backend and Next.js frontend",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose up --build",
+    "dev:down": "docker compose down",
+    "build": "docker compose build",
+    "backend:install": "cd backend && npm install",
+    "backend:dev": "cd backend && npm run start:dev",
+    "frontend:install": "cd frontend && npm install",
+    "frontend:dev": "cd frontend && npm run dev"
+  },
+  "keywords": ["chat", "nestjs", "next.js", "typescript", "websocket"],
+  "author": "",
+  "license": "UNLICENSED"
+}
