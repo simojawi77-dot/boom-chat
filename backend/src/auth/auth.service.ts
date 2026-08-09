@@ -97,8 +97,39 @@ export class AuthService {
     email: string;
     displayName?: string;
     avatarUrl?: string;
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+    city?: string;
+    dateOfBirth?: string;
+    phone?: string;
   }) {
-    const { id, username, email, displayName, avatarUrl } = user;
-    return { id, username, email, displayName, avatarUrl };
+    const {
+      id,
+      username,
+      email,
+      displayName,
+      avatarUrl,
+      firstName,
+      lastName,
+      gender,
+      city,
+      dateOfBirth,
+      phone,
+    } = user;
+
+    return {
+      id,
+      username,
+      email,
+      displayName,
+      avatarUrl,
+      firstName,
+      lastName,
+      gender,
+      city,
+      dateOfBirth,
+      phone,
+    };
   }
 }

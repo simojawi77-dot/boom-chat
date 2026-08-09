@@ -23,6 +23,24 @@ export class User {
   passwordHash: string;
 
   @Column({ nullable: true })
+  firstName?: string;
+
+  @Column({ nullable: true })
+  lastName?: string;
+
+  @Column({ nullable: true })
+  gender?: string;
+
+  @Column({ nullable: true })
+  city?: string;
+
+  @Column({ type: 'date', nullable: true })
+  dateOfBirth?: string;
+
+  @Column({ nullable: true })
+  phone?: string;
+
+  @Column({ nullable: true })
   displayName?: string;
 
   @Column({ nullable: true })

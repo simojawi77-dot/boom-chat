@@ -73,6 +73,12 @@ export async function registerUser(payload: {
   username: string;
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
+  gender?: 'male' | 'female';
+  city?: string;
+  dateOfBirth?: string;
+  phone?: string;
 }) {
   return request<{ user: unknown; accessToken: string; refreshToken: string }>(
     "/auth/register",
@@ -85,5 +91,16 @@ export async function registerUser(payload: {
 }
 
 export async function fetchCurrentUser() {
-  return request<{ id: string; username: string; email: string }>("/profile/me");
+  return request<{
+    id: string;
+    username: string;
+    email: string;
+    displayName?: string;
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+    city?: string;
+    dateOfBirth?: string;
+    phone?: string;
+  }>("/profile/me");
 }

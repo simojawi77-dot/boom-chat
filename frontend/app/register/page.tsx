@@ -16,11 +16,11 @@ import Navbar from "../components/Navbar";
 import AvatarPreview from "./components/AvatarPreview";
 import ProgressIndicator from "./components/ProgressIndicator";
 import {
+  calculateAge,
   getAvatarDisplay,
   type RegisterStep,
   TOTAL_STEPS,
   stepFields,
-  type PasswordAvatarState,
 } from "./registerWizard";
 import Step1 from "./steps/Step1";
 import Step2 from "./steps/Step2";
@@ -31,6 +31,7 @@ import Step6 from "./steps/Step6";
 
 const defaultValues: Partial<RegisterData> = {
   dateOfBirth: "",
+  age: undefined,
   firstName: "",
   lastName: "",
   city: "",
@@ -60,14 +61,12 @@ const createUniqueUsername = (data: RegisterData) => {
 
 export default function RegisterPage() {
   const [step, setStep] = useState<RegisterStep>(1);
-  const [passwordState, setPasswordState] =
-    useState<PasswordAvatarState>("open");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const form = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
-    mode: "onBlur",
+    mode: "onSubmit",
     defaultValues,
   });
 
@@ -76,9 +75,17 @@ export default function RegisterPage() {
     name: "age",
   });
 
+  const dateOfBirth = useWatch({
+    control: form.control,
+    name: "dateOfBirth",
+  });
+
+  const effectiveAge =
+    typeof age === "number" ? age : calculateAge(dateOfBirth);
+
   const avatarDisplay = useMemo(
-    () => getAvatarDisplay(step, age, passwordState),
-    [step, age, passwordState],
+    () => getAvatarDisplay(step, effectiveAge),
+    [step, effectiveAge],
   );
 
   const goToNextStep = async () => {
@@ -103,11 +110,17 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      const username = `${data.firstName} ${data.lastName}`.trim().slice(0, 30) || data.email.split("@")[0];
+      const username = createUniqueUsername(data);
       const result = await registerUser({
         username,
         email: data.email,
         password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        gender: data.gender,
+        city: data.city,
+        dateOfBirth: data.dateOfBirth,
+        phone: data.phone,
       });
 
       storeAuthTokens(result);
@@ -126,38 +139,32 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] transition-colors duration-300">
+    <main className="min-h-dvh bg-[var(--bg)] text-[var(--text-primary)] transition-colors duration-300">
       <Navbar />
 
-      <div className="px-4 py-8 sm:px-6 lg:px-8">
-        <section className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-6xl items-center justify-center">
+      <div className="flex min-h-[calc(100dvh-4rem)] items-center px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
+        <section className="mx-auto flex w-full max-w-7xl items-center justify-center">
           <FormProvider {...form}>
             <form
               noValidate
               onSubmit={form.handleSubmit(submitRegistration)}
-              className="w-full overflow-hidden rounded-[2rem] border border-[var(--border-soft)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)] backdrop-blur-xl transition-colors duration-300 sm:p-8"
+              className="flex w-full flex-col rounded-[2rem] border border-[var(--border-soft)] bg-[var(--surface)] p-4 shadow-[var(--shadow-soft)] backdrop-blur-xl transition-colors duration-300 sm:p-5 lg:min-h-[min(760px,calc(100dvh-5rem))] lg:p-6"
             >
-              {/* Header */}
-              <div className="mb-8">
+              <div className="mb-4 shrink-0 sm:mb-5">
                 <ProgressIndicator currentStep={step} />
               </div>
 
-              {/* Main Content Grid */}
-              <div className="grid gap-8 lg:grid-cols-[1fr_300px] lg:items-start">
-                {/* Form Content */}
-                <div className="order-2 min-h-[420px] lg:order-1">
+              <div className="grid flex-1 min-h-0 gap-5 lg:grid-cols-[minmax(0,1.25fr)_300px] lg:items-center xl:grid-cols-[minmax(0,1.35fr)_320px]">
+                <div className="order-2 min-h-0 lg:order-1">
                   {step === 1 && <Step1 />}
                   {step === 2 && <Step2 />}
                   {step === 3 && <Step3 />}
-                  {step === 4 && (
-                    <Step4 onPasswordAvatarStateChange={setPasswordState} />
-                  )}
+                  {step === 4 && <Step4 />}
                   {step === 5 && <Step5 />}
                   {step === 6 && <Step6 />}
                 </div>
 
-                {/* Avatar Preview */}
-                <div className="order-1 flex flex-col items-center justify-center rounded-3xl border border-[var(--border-soft)] bg-[var(--model)] p-5 lg:order-2 lg:sticky lg:top-6">
+                <div className="order-1 flex min-h-0 items-center justify-center rounded-[2rem] border border-[var(--border-soft)] bg-[var(--model)] p-3 sm:p-4 lg:order-2">
                   <AvatarPreview
                     imageSource={avatarDisplay.source}
                     label={avatarDisplay.label}
@@ -165,17 +172,19 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Footer Navigation */}
-              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                <button
-                  type="button"
-                  onClick={goToPreviousStep}
-                  disabled={step === 1}
-                  aria-label="Go to previous step"
-                  className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-strong)] px-6 py-3 text-base font-bold text-[var(--text-primary)] transition duration-200 enabled:hover:bg-[var(--border-soft)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Back
-                </button>
+              <div
+                className={`mt-5 flex shrink-0 flex-col-reverse gap-3 sm:mt-6 sm:flex-row ${step === 1 ? "sm:justify-end" : "sm:justify-between"}`}
+              >
+                {step > 1 && (
+                  <button
+                    type="button"
+                    onClick={goToPreviousStep}
+                    aria-label="Go to previous step"
+                    className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-strong)] px-6 py-3 text-base font-bold text-[var(--text-primary)] transition duration-200 hover:bg-[var(--border-soft)]"
+                  >
+                    Back
+                  </button>
+                )}
 
                 {step < TOTAL_STEPS ? (
                   <button
