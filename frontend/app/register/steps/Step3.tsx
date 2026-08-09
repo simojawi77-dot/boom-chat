@@ -36,7 +36,7 @@ export default function Step3() {
           type="email"
           id="email"
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder="you@example.com" required
           className={getFieldControlClassName(Boolean(errors.email))}
           {...register("email")}
         />

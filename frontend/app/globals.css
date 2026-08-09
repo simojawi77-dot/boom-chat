@@ -45,13 +45,24 @@
   box-sizing: border-box;
 }
 
+html {
+  height: 100%;
+  width: 100%;
+  scroll-behavior: smooth;
+}
+
 body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
   background: var(--bg);
   color: var(--text-primary);
   transition: background-color 240ms ease, color 240ms ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Light mode text visibility improvements */
@@ -115,4 +126,11 @@ body {
 @keyframes appFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }
+}
+
+@keyframes field-error-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
 }

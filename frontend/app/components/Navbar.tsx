@@ -1,24 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { MoonStar, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 import BoomLogo from "./BoomLogo";
 import styles from "../styles/login.module.css";
 
-interface NavbarProps {
-  theme?: string;
-  setTheme?: (theme: string) => void;
-}
+const subscribe = () => () => undefined;
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
-export default function Navbar({
-  theme: controlledTheme,
-  setTheme: setControlledTheme,
-}: NavbarProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { theme: resolvedTheme, setTheme: setResolvedTheme } = useTheme();
-  const currentTheme = controlledTheme ?? resolvedTheme;
-  const setTheme = setControlledTheme ?? setResolvedTheme;
+export default function Navbar() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const isMounted = useSyncExternalStore(
+    subscribe,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
+  const isDarkMode = isMounted && resolvedTheme === "dark";
 
   return (
     <header className={styles.topbar}>
@@ -31,41 +31,18 @@ export default function Navbar({
         <Link href="/register">Register</Link>
       </nav>
 
-      <div className={styles.menuWrap}>
-        <button
-          className={`${styles.bubble} ${menuOpen ? styles.popped : ""}`}
-          aria-label="Menu"
-          onClick={() => setMenuOpen((v) => !v)}
-        />
-
-        {menuOpen && (
-          <div className={styles.settingsPanel}>
-            <p className={styles.settingsTitle}>Settings</p>
-
-            <div className={styles.themeToggle}>
-              <button
-                className={currentTheme === "light" ? styles.active : ""}
-                onClick={() => {
-                  setTheme("light");
-                  setMenuOpen(false);
-                }}
-              >
-                ☀️ Light Mode
-              </button>
-
-              <button
-                className={currentTheme === "dark" ? styles.active : ""}
-                onClick={() => {
-                  setTheme("dark");
-                  setMenuOpen(false);
-                }}
-              >
-                🌙 Dark Mode
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <button
+        type="button"
+        onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+        aria-label="Toggle theme"
+        disabled={!isMounted}
+        className="inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_srgb,var(--accent)_35%,transparent)] bg-[var(--surface-strong)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[var(--model)] disabled:cursor-wait disabled:opacity-70"
+      >
+        <span aria-hidden="true">
+          {isDarkMode ? <SunMedium size={16} /> : <MoonStar size={16} />}
+        </span>
+        <span>{isDarkMode ? "Light mode" : "Dark mode"}</span>
+      </button>
     </header>
   );
 }

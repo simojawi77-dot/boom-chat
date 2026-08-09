@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -11,10 +11,18 @@ export class JwtRefreshStrategy extends PassportStrategy(
   'jwt-refresh',
 ) {
   constructor(configService: ConfigService) {
+    const secret = configService.get<string>('JWT_REFRESH_SECRET') || 'default_refresh_secret';
+    if (!configService.get<string>('JWT_REFRESH_SECRET')) {
+      Logger.warn(
+        'JWT_REFRESH_SECRET is not configured. Using fallback secret for local development only.',
+        JwtRefreshStrategy.name,
+      );
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_REFRESH_SECRET')!,
+      secretOrKey: secret,
       passReqToCallback: true,
     });
   }

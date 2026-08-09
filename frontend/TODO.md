@@ -1,32 +1,33 @@
 # Avatar & Registration Polish — Task Steps
 
-## ✅ Step 1: Fix avatar image paths
-- [x] `registerWizard.ts`: change `/Avatars/` → `/avatars/` for all stages + half/close variants + `getAvatarSource`.
+## ✅ Git Merge (keep user's version)
 
-## ✅ Step 2: Add password show/hide eye toggle in Step4
-- [x] Install `lucide-react`.
-- [x] `Step4.tsx`: add `showPassword`/`showConfirmPassword` state + eye toggle buttons (lucide `Eye`/`EyeOff` icons).
-- [x] Avatar closes eyes when password visible, opens when hidden (with 140ms transition).
+- [x] Resolve conflict in `app/register/page.tsx` (kept user's `Navbar` version + integrated the incoming `createUniqueUsername` helper into submission).
+- [x] Build verified after merge resolution.
 
-## ✅ Step 3: Smooth avatar eye transition
-- [x] `avatar.module.css`: add a short transition (150-200ms) for the open/close animation.
+## ✅ Step 1: Fix avatar growth bug
 
-## ✅ Step 4: Fix large-screen layout
-- [x] `page.tsx`: change grid to `lg:grid-cols-[1fr_300px]`; center/sticky avatar panel on large screens.
+- [x] Add `age: undefined` to `defaultValues` in `register/page.tsx` so `useWatch({ name: "age" })` can subscribe reliably.
+- [x] Add fallback: watch `dateOfBirth` and derive `effectiveAge = age ?? calculateAge(dateOfBirth)` — avatar always knows the user's age.
+- [x] Maintained answer **C** behavior: avatar grows with each step (`1 year → 2 years → 11 years → 18 years → 18-25 → 27+`) but never exceeds the user's actual age. Once the user reaches their max stage, pressing Next no longer grows the avatar.
 
-## ✅ Step 5: Fix light-mode text visibility
-- [x] `globals.css`: improve `--text-secondary` / `--text-placeholder` contrast in default `:root`.
+## ✅ Step 2: Restore avatar animations
 
-## ✅ Step 6: Add Navbar to register page
-- [x] `page.tsx`: add `<Navbar />` at top; remove redundant inline theme toggle in form header.
-- [x] Ensure Navbar doesn't crowd the form on small screens (responsive CSS in login.module.css).
+- [x] `avatar.module.css`: restored/enhanced `avatarArrival` — now a smooth bounce (scale 0.7 → 1.04 → 1) over 460ms, triggered by `key={imageSource}` in `AvatarPreview.tsx` whenever the avatar stage changes.
+- [x] Kept `avatarGlow`, `avatarOrbit`, `avatarSparkle` ambient animations + reduced-motion media query.
 
-## ✅ Step 7: Rename manAvatar files
-- [x] `-1 year.png` → `1year.png`
-- [x] `+27 years.png` → `27plus.png`
-- [x] `18-half.png.png` → `18-half.png`
+## ✅ Step 3: Build the home page (Hero + Features + CTAs)
+
+- [x] `app/page.tsx`: full hero section ("Buy & Sell Gaming Accounts Securely") with badge, subtitle, **Get Started** button → `/register`, **Sign In** button → `/login`.
+- [x] Features grid: Secure Transactions, Trusted Community, Instant Delivery, Your Data Protected (lucide icons).
+- [x] Supports both dark and light modes via `next-themes` `useTheme` + existing CSS variables (`--accent`, `--bg`, `--text-primary`, `--model`, `--surface`).
+
+## ✅ Step 4: Fix small pages / viewport coverage
+
+- [x] `app/layout.tsx`: exported `viewport` metadata (`width: device-width`, `initialScale: 1`, `viewportFit: cover`) + `metadata` (title/description).
+- [x] `app/globals.css`: `html`/`body` set to fill viewport (`min-height: 100vh/100dvh`, `width: 100%`) — pages now stretch full-screen instead of looking small.
 
 ## ✅ Verification
-- [x] `npm run lint` — 0 errors (2 pre-existing warnings unrelated to changes).
-- [x] `npx tsc --noEmit` — no type errors.
-- [x] Build artifacts generated successfully.
+
+- [x] `npm run build` — compiled successfully, all routes generated (`/`, `/login`, `/register`), no type errors.
+- [x] `npm run lint` — 0 errors (only 3 pre-existing warnings unrelated to these changes).

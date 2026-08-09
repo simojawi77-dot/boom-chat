@@ -23,15 +23,10 @@ export const stepFields: Record<RegisterStep, (keyof RegisterData)[]> = {
 };
 
 export const calculateAge = (dateOfBirth: string) => {
-  if (!dateOfBirth) {
-    return undefined;
-  }
+  if (!dateOfBirth) return undefined;
 
   const birthDate = new Date(dateOfBirth);
-
-  if (Number.isNaN(birthDate.getTime())) {
-    return undefined;
-  }
+  if (Number.isNaN(birthDate.getTime())) return undefined;
 
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
@@ -39,14 +34,14 @@ export const calculateAge = (dateOfBirth: string) => {
     today.getMonth() < birthDate.getMonth() ||
     (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
 
-  if (birthdayHasNotPassed) {
-    age -= 1;
-  }
-
+  if (birthdayHasNotPassed) age -= 1;
   return age >= 0 ? age : undefined;
 };
 
-export type PasswordAvatarState = "open" | "half" | "closed";
+export const getAgeDisplayLabel = (age?: number) => {
+  if (typeof age !== "number") return "Age will appear here";
+  return age === 1 ? "1 year old" : `${age} years old`;
+};
 
 type AvatarStage = {
   maxAge: number;
@@ -63,49 +58,18 @@ const avatarStages: AvatarStage[] = [
   { maxAge: Number.POSITIVE_INFINITY, label: "27+", source: "/avatars/27plus.png" },
 ];
 
-// Get avatar stage index based on age
 const getTargetAvatarStageIndex = (age?: number) => {
-  if (typeof age !== "number") {
-    return 0; // Start from 1year if no age is selected
-  }
-
+  if (typeof age !== "number") return 0;
   return avatarStages.findIndex((stage) => age <= stage.maxAge);
 };
 
-// Get avatar stage index based on registration step (progressive growth)
-const getStepStageIndex = (step: RegisterStep): number => {
-  return Math.min(step - 1, avatarStages.length - 1);
+const getStepStageIndex = (step: RegisterStep) =>
+  Math.min(step - 1, avatarStages.length - 1);
+
+export const getAvatarDisplay = (step: RegisterStep, age?: number) => {
+  const stageIndex = Math.min(getStepStageIndex(step), getTargetAvatarStageIndex(age));
+  return avatarStages[stageIndex];
 };
 
-export const getAvatarDisplay = (
-  step: RegisterStep,
-  age?: number,
-  passwordState: PasswordAvatarState = "open",
-) => {
-  const stepStageIndex = getStepStageIndex(step);
-  const targetStageIndex = getTargetAvatarStageIndex(age);
-
-  // Select the minimum stage between step stage and age stage
-  // Avatar grows with each step but never exceeds the user's age
-  const stageIndex = Math.min(stepStageIndex, targetStageIndex);
-  const stage = avatarStages[stageIndex];
-
-  // Apply password state only to 18-year stage (Step 4)
-  if (stage.maxAge === 18 && step === 4) {
-    if (passwordState === "half") {
-      return { ...stage, source: "/avatars/18-half.png" };
-    }
-
-    if (passwordState === "closed") {
-      return { ...stage, source: "/avatars/18-close.png" };
-    }
-  }
-
-  return stage;
-};
-
-// Helper function to get avatar source only (for backward compatibility)
-export const getAvatarSource = (age?: number): string => {
-  // This function is kept for compatibility
-  return getAvatarDisplay(1, age).source;
-};
+export const getAvatarSource = (age?: number): string =>
+  getAvatarDisplay(1, age).source;
