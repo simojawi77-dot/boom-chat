@@ -26,34 +26,44 @@ npm run dev
 ```
 
 This will start:
+
 - **Backend**: http://localhost:4000
 - **Frontend**: http://localhost:3000
 - **PostgreSQL**: localhost:5432
 
 To stop services:
+
 ```bash
 npm run dev:down
 ```
 
-### Local Development
+### Local Development (without Docker)
 
-#### Backend Setup
+If you prefer to run the app directly on your machine, start the database first and then run each service separately:
+
 ```bash
+docker compose up -d db
 cd backend
 npm install
 npm run start:dev
 ```
 
-#### Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
+You can also start both app processes together with:
+
+```bash
+npm run dev:local
+```
+
 ## Environment Variables
 
 ### Backend (.env.local)
+
 ```
 PORT=4000
 NODE_ENV=development
@@ -71,6 +81,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ### Frontend (.env.local)
+
 ```
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
@@ -87,6 +98,7 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 ## Available Scripts
 
 ### Root Level
+
 - `npm run dev` - Start all services with Docker Compose
 - `npm run dev:down` - Stop all services
 - `npm run build` - Build Docker images
@@ -96,12 +108,14 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 - `npm run frontend:dev` - Run frontend in development mode
 
 ### Backend
+
 - `npm run start:dev` - Start in watch mode
 - `npm run build` - Build for production
 - `npm run test` - Run unit tests
 - `npm run test:e2e` - Run e2e tests
 
 ### Frontend
+
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
@@ -109,19 +123,23 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 ## API Documentation
 
 ### Authentication Endpoints
+
 - `POST /auth/register` - Register new user
 - `POST /auth/login` - Login user
 - `POST /auth/refresh` - Refresh JWT token
 
 ### Chat Endpoints
+
 - `GET /chat/messages` - Get chat messages
 - `POST /chat/messages` - Send message (WebSocket)
 
 ### Profile Endpoints
+
 - `GET /profile/:userId` - Get user profile
 - `PUT /profile` - Update user profile
 
 ### Upload Endpoints
+
 - `POST /upload/avatar` - Upload avatar
 
 ## Database
@@ -143,6 +161,7 @@ For production deployment:
 ## Troubleshooting
 
 ### Port Already in Use
+
 ```bash
 # Check what's using the port
 lsof -i :3000
@@ -154,6 +173,7 @@ kill -9 <PID>
 ```
 
 ### Database Connection Issues
+
 ```bash
 # Verify Docker container is running
 docker ps
@@ -163,6 +183,7 @@ docker-compose logs db
 ```
 
 ### Build Issues
+
 ```bash
 # Clean build
 docker-compose down

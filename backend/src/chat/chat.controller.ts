@@ -1,8 +1,9 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+﻿import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GroupsAuthorizationService } from '../groups/groups-authorization.service';
 import { ChatService } from './chat.service';
+import { CreateMessageDto } from './dto/create-message.dto';
 
 interface AuthenticatedRequest extends Request {
   user: { userId: string; username: string };
@@ -15,6 +16,11 @@ export class ChatController {
     private readonly chatService: ChatService,
     private readonly groupsAuthorizationService: GroupsAuthorizationService,
   ) {}
+
+  @Post('messages')
+  sendMessage(@Req() req: AuthenticatedRequest, @Body() dto: CreateMessageDto) {
+    return this.chatService.saveMessage(req.user.userId, dto.content, dto.receiverId, dto.groupId);
+  }
 
   @Get('conversation/:userId')
   getConversation(

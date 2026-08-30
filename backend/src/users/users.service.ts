@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -52,6 +52,14 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { username } });
   }
 
+  async listPublic(query: string, currentUserId: string) {
+    const normalized = query.trim().toLowerCase();
+    const users = await this.usersRepository.createQueryBuilder('user')
+      .where('user.id != :currentUserId', { currentUserId })
+      .andWhere(normalized ? '(LOWER(user.username) LIKE :query OR LOWER(COALESCE(user.displayName, \'\')) LIKE :query OR LOWER(COALESCE(user.city, \'\')) LIKE :query)' : '1=1', normalized ? { query: `%${normalized}%` } : {})
+      .orderBy('user.createdAt', 'DESC').take(30).getMany();
+    return users.map(({ id, username, displayName, firstName, lastName, city, avatarUrl, bio }) => ({ id, username, displayName, firstName, lastName, city, avatarUrl, bio }));
+  }
   async setRefreshTokenHash(
     userId: string,
     refreshTokenHash: string | null,

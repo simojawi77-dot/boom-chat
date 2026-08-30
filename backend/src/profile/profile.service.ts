@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User } from '../users/entities/user.entity';
@@ -46,6 +46,9 @@ export class ProfileService {
       coverPhotoUrl,
       bio,
       createdAt,
+      firstName,
+      lastName,
+      city,
     } = user;
     return {
       id,
@@ -56,6 +59,9 @@ export class ProfileService {
       coverPhotoUrl,
       bio,
       createdAt,
+      firstName,
+      lastName,
+      city,
     };
   }
 

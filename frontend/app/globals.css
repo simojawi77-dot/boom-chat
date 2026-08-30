@@ -134,3 +134,7 @@ body {
   50% { transform: translateX(4px); }
   75% { transform: translateX(-2px); }
 }
+
+:root { --radius-card: 18px; --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent); }
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+button, input, textarea { font: inherit; }

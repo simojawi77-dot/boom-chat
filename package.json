@@ -2,7 +2,9 @@
   "name": "boom_chat",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev": "docker compose up --build",
+    "dev:down": "docker compose down -v",
+    "dev:local": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run start:dev"
   },

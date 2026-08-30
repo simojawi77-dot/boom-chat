@@ -1,32 +1,19 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useTheme } from "next-themes";
+import { useMemo, useState } from "react";
+import { Filter, Plus, Sparkles } from "lucide-react";
+import { AppNav, CreatePostCard, PostCard, QuickAction, RightRail } from "./sharedUi";
+import { posts } from "./homeData";
 import styles from "./home.module.css";
-import { discoveryCards, posts } from "./homeData";
-import { CreatePostCard, DiscoveryCard, LocationSelector, MobileBottomNav, PostCard, RightRail, TopNav } from "./sharedUi";
-import AppSidebar from "./components/AppSidebar";
+import { useCurrentUser } from "./useCurrentUser";
 
 export default function HomePage() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCity, setSelectedCity] = useState("Fes");
-  const [selectedInterests, setSelectedInterests] = useState(["Programming", "Study"]);
-  useEffect(() => { const close = (event: KeyboardEvent) => { if (event.key === "Escape") { setMenuOpen(false); setNotificationsOpen(false); setSearchOpen(false); } }; window.addEventListener("keydown", close); return () => window.removeEventListener("keydown", close); }, []);
-  const visiblePosts = useMemo(() => { const query = searchQuery.trim().toLowerCase(); return query ? posts.filter((post) => [post.author, post.city, post.category, post.text, ...post.tags].join(" ").toLowerCase().includes(query)) : posts; }, [searchQuery]);
-  const toggleInterest = (interest: string) => setSelectedInterests((current) => current.includes(interest) ? current.filter((item) => item !== interest) : [...current, interest]);
-  return <main id="top" className={styles.page}>
-    <div className={styles.backgroundGlow} />
-    <TopNav searchOpen={searchOpen} onToggleSearch={() => setSearchOpen((value) => !value)} searchValue={searchQuery} onSearchChange={setSearchQuery} notificationsOpen={notificationsOpen} onToggleNotifications={() => setNotificationsOpen((value) => !value)} onToggleMenu={() => setMenuOpen((value) => !value)} />
-    {menuOpen && <button type="button" className={styles.drawerBackdrop} onClick={() => setMenuOpen(false)} aria-label="Close menu" />}
-    <div className={styles.shell}><div className={styles.grid}>
-      <AppSidebar selectedCity={selectedCity} onCityChange={setSelectedCity} selectedInterests={selectedInterests} onToggleInterest={toggleInterest} isOpen={menuOpen} onClose={() => setMenuOpen(false)} isDark={resolvedTheme === "dark"} onToggleTheme={setTheme} />
-      <section className={styles.feed} aria-label="Home feed"><header className={styles.feedHeader}><div className={styles.headline}><p className={styles.eyebrow}>Your community, in one place</p><h1>Discover people, groups, and activities you will enjoy.</h1><p>Find your next study partner, join conversations, and meet people who share your interests.</p></div><LocationSelector selectedCity={selectedCity} onCityChange={setSelectedCity} /></header>
-      <section id="discover" className={styles.discoveryRow} aria-label="Discover">{discoveryCards.map((card) => <DiscoveryCard key={card.title} {...card} />)}</section><section id="study"><CreatePostCard /></section><section id="activity" className={styles.postList}>{visiblePosts.length ? visiblePosts.map((post) => <PostCard key={post.id} post={post} />) : <p className={styles.emptyState}>No posts match “{searchQuery}”. Try another search.</p>}</section></section>
-      <RightRail />
-    </div></div><MobileBottomNav active="home" />
-  </main>;
+  const [query, setQuery] = useState("");
+  const user = useCurrentUser();
+  const name = user?.firstName || user?.displayName || user?.username || "there";
+  const visiblePosts = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return term ? posts.filter((post) => [post.author, post.city, post.category, post.text, ...post.tags].join(" ").toLowerCase().includes(term)) : posts;
+  }, [query]);
+  return <main className={styles.page}><AppNav query={query} onQueryChange={setQuery}/><div className={styles.layout}><aside className={styles.sidePanel}><p className={styles.sectionLabel}>Your space</p><h1>Good evening, {name}</h1><p className={styles.muted}>{user?.city ? `Your community in ${user.city} is waiting for you.` : "Find your people, communities, and next plan."}</p><div className={styles.quickActions}><QuickAction href="/messages" icon="message" label="Messages" detail="3 unread"/><QuickAction href="/groups" icon="group" label="Groups" detail="12 communities"/><QuickAction href="/discover" icon="spark" label="Discover" detail="People near you"/></div><a href="/groups" className={styles.outlineButton}><Plus size={17}/> Create a group</a></aside><section className={styles.feed}><header className={styles.feedHeader}><div><p className={styles.sectionLabel}>Community feed</p><h2>What&apos;s happening around you</h2></div><button type="button" className={styles.filterButton}><Filter size={17}/> Filters</button></header><section className={styles.highlight}><Sparkles size={20}/><div><strong>Make today social.</strong><span>Join a group, share an idea, or start a conversation.</span></div><a href="/discover">Explore</a></section><CreatePostCard/><div className={styles.feedTabs}><button type="button" className={styles.activeTab}>For you</button><button type="button">Following</button><button type="button">Groups</button></div><div className={styles.postList}>{visiblePosts.map((post) => <PostCard key={post.id} post={post}/>)}</div></section><RightRail/></div></main>;
 }

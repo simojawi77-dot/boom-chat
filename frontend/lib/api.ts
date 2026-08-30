@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+﻿const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 interface ApiRequestOptions extends RequestInit {
   auth?: boolean;
@@ -40,13 +40,16 @@ async function request<T>(path: string, options: ApiRequestOptions = {}): Promis
   return data as T;
 }
 
-export function storeAuthTokens(payload: { accessToken: string; refreshToken: string }) {
+export type CurrentUser = { id?: string; username: string; email?: string; displayName?: string; firstName?: string; lastName?: string; city?: string; avatarUrl?: string };
+
+export function storeAuthTokens(payload: { accessToken: string; refreshToken: string; user?: CurrentUser }) {
   if (typeof window === "undefined") {
     return;
   }
 
   localStorage.setItem("accessToken", payload.accessToken);
   localStorage.setItem("refreshToken", payload.refreshToken);
+  if (payload.user) localStorage.setItem("currentUser", JSON.stringify(payload.user));
 }
 
 export function clearAuthTokens() {
@@ -56,10 +59,11 @@ export function clearAuthTokens() {
 
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("currentUser");
 }
 
 export async function loginUser(email: string, password: string) {
-  return request<{ user: unknown; accessToken: string; refreshToken: string }>(
+  return request<{ user: CurrentUser; accessToken: string; refreshToken: string }>(
     "/auth/login",
     {
       method: "POST",
@@ -80,7 +84,7 @@ export async function registerUser(payload: {
   dateOfBirth?: string;
   phone?: string;
 }) {
-  return request<{ user: unknown; accessToken: string; refreshToken: string }>(
+  return request<{ user: CurrentUser; accessToken: string; refreshToken: string }>(
     "/auth/register",
     {
       method: "POST",
@@ -104,3 +108,15 @@ export async function fetchCurrentUser() {
     phone?: string;
   }>("/profile/me");
 }
+
+export type Group = { id: string; name: string; description?: string; avatarUrl?: string; memberCount?: number; members?: unknown[] };
+export function fetchMyGroups() { return request<Group[]>("/groups"); }
+export function createGroup(payload: { name: string; description?: string }) { return request<Group>("/groups", { method: "POST", body: JSON.stringify(payload) }); }
+
+export type DirectoryUser = { id: string; username: string; displayName?: string; firstName?: string; lastName?: string; city?: string; bio?: string };
+export function searchUsers(query = "") { return request<DirectoryUser[]>(`/users?q=${encodeURIComponent(query)}`); }
+export type Message = { id: string; senderId: string; receiverId?: string; content: string; createdAt: string };
+export function fetchConversation(userId: string) { return request<Message[]>(`/chat/conversation/${userId}`); }
+export function sendMessage(payload: { receiverId?: string; groupId?: string; content: string }) { return request<Message>("/chat/messages", { method: "POST", body: JSON.stringify(payload) }); }
+
+export function updateMyProfile(payload: { displayName?: string; bio?: string }) { return request<CurrentUser & { bio?: string }>("/profile/me", { method: "PATCH", body: JSON.stringify(payload) }); }
