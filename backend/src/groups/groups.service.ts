@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -9,6 +10,11 @@ import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { AddMemberDto } from './dto/add-member.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
+import {
+  DEFAULT_GROUPS_QUERY_LIMIT,
+  ListGroupsQueryDto,
+  MAX_GROUPS_QUERY_LIMIT,
+} from './dto/list-groups-query.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 import { GroupMember, GroupMemberRole } from './entities/group-member.entity';
@@ -25,6 +31,28 @@ type PublicUser = Pick<
   | 'bio'
   | 'createdAt'
 >;
+
+type GroupSummary = {
+  id: string;
+  name: string;
+  description?: string;
+  avatarUrl?: string;
+  createdById: string;
+  createdBy: PublicUser | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type GroupCursor = {
+  joinedAt: string;
+  id: string;
+};
+
+export type GroupsPageResponse = {
+  items: Array<GroupSummary & { myRole: GroupMemberRole }>;
+  nextCursor: string | null;
+  hasMore: boolean;
+};
 
 @Injectable()
 export class GroupsService {
@@ -74,17 +102,49 @@ export class GroupsService {
     return this.toGroupResponse(group, membership.role);
   }
 
-  async getUserGroups(userId: string) {
-    const memberships = await this.groupMembersRepository.find({
-      where: { userId },
-      relations: ['group', 'group.createdBy'],
-      order: { joinedAt: 'ASC' },
-    });
+  async getUserGroups(
+    userId: string,
+    query: ListGroupsQueryDto = new ListGroupsQueryDto(),
+  ): Promise<GroupsPageResponse> {
+    const limit = this.normalizeLimit(query.limit);
+    const cursor = this.decodeCursor(query.before);
 
-    return memberships.map((membership) => ({
-      ...this.toGroupSummary(membership.group),
-      myRole: membership.role,
-    }));
+    const queryBuilder = this.groupMembersRepository
+      .createQueryBuilder('membership')
+      .leftJoinAndSelect('membership.group', 'group')
+      .leftJoinAndSelect('group.createdBy', 'createdBy')
+      .where('membership.userId = :userId', { userId });
+
+    if (cursor) {
+      queryBuilder.andWhere(
+        '(membership.joinedAt > :beforeJoinedAt OR (membership.joinedAt = :beforeJoinedAt AND membership.id > :beforeId))',
+        {
+          beforeJoinedAt: cursor.joinedAt,
+          beforeId: cursor.id,
+        },
+      );
+    }
+
+    const rows = await queryBuilder
+      .orderBy('membership.joinedAt', 'ASC')
+      .addOrderBy('membership.id', 'ASC')
+      .take(limit + 1)
+      .getMany();
+
+    const hasMore = rows.length > limit;
+    const pageRows = rows.slice(0, limit);
+
+    return {
+      items: pageRows.map((membership) => ({
+        ...this.toGroupSummary(membership.group),
+        myRole: membership.role,
+      })),
+      hasMore,
+      nextCursor:
+        hasMore && pageRows.length > 0
+          ? this.encodeCursor(pageRows[pageRows.length - 1])
+          : null,
+    };
   }
 
   async updateGroup(groupId: string, userId: string, dto: UpdateGroupDto) {
@@ -231,7 +291,7 @@ export class GroupsService {
     };
   }
 
-  private toGroupSummary(group: Group) {
+  private toGroupSummary(group: Group): GroupSummary {
     return {
       id: group.id,
       name: group.name,
@@ -279,5 +339,53 @@ export class GroupsService {
       bio,
       createdAt,
     };
+  }
+
+  private normalizeLimit(limit?: number) {
+    if (typeof limit !== 'number' || Number.isNaN(limit)) {
+      return DEFAULT_GROUPS_QUERY_LIMIT;
+    }
+
+    return Math.min(
+      MAX_GROUPS_QUERY_LIMIT,
+      Math.max(1, Math.trunc(limit)),
+    );
+  }
+
+  private encodeCursor(membership: Pick<GroupMember, 'joinedAt' | 'id'>) {
+    return Buffer.from(
+      JSON.stringify({
+        joinedAt: membership.joinedAt.toISOString(),
+        id: membership.id,
+      }),
+    ).toString('base64url');
+  }
+
+  private decodeCursor(before?: string) {
+    if (!before) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(
+        Buffer.from(before, 'base64url').toString('utf8'),
+      ) as Partial<GroupCursor>;
+
+      if (
+        typeof parsed.joinedAt !== 'string' ||
+        Number.isNaN(Date.parse(parsed.joinedAt)) ||
+        typeof parsed.id !== 'string' ||
+        !parsed.id
+      ) {
+        throw new Error('Invalid cursor');
+      }
+
+      return {
+        joinedAt: new Date(parsed.joinedAt).toISOString(),
+        id: parsed.id,
+      };
+    } catch {
+      throw new BadRequestException('Invalid before cursor');
+    }
   }
 }

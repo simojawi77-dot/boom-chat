@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AddMemberDto } from './dto/add-member.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
+import { ListGroupsQueryDto } from './dto/list-groups-query.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 import { GroupsService } from './groups.service';
@@ -32,8 +34,11 @@ export class GroupsController {
   }
 
   @Get()
-  getMyGroups(@Req() req: AuthenticatedRequest) {
-    return this.groupsService.getUserGroups(req.user.userId);
+  getMyGroups(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: ListGroupsQueryDto,
+  ) {
+    return this.groupsService.getUserGroups(req.user.userId, query);
   }
 
   @Get(':id')

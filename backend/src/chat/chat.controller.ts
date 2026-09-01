@@ -1,9 +1,19 @@
-﻿import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GroupsAuthorizationService } from '../groups/groups-authorization.service';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
 
 interface AuthenticatedRequest extends Request {
   user: { userId: string; username: string };
@@ -19,23 +29,37 @@ export class ChatController {
 
   @Post('messages')
   sendMessage(@Req() req: AuthenticatedRequest, @Body() dto: CreateMessageDto) {
-    return this.chatService.saveMessage(req.user.userId, dto.content, dto.receiverId, dto.groupId);
+    return this.chatService.saveMessage(
+      req.user.userId,
+      dto.content,
+      dto.receiverId,
+      dto.groupId,
+    );
   }
 
   @Get('conversation/:userId')
   getConversation(
     @Req() req: AuthenticatedRequest,
     @Param('userId') otherUserId: string,
+    @Query() query: ListMessagesQueryDto,
   ) {
-    return this.chatService.getConversation(req.user.userId, otherUserId);
+    return this.chatService.getConversation(
+      req.user.userId,
+      otherUserId,
+      query,
+    );
   }
 
   @Get('group/:groupId')
   async getGroupMessages(
     @Req() req: AuthenticatedRequest,
     @Param('groupId') groupId: string,
+    @Query() query: ListMessagesQueryDto,
   ) {
-    await this.groupsAuthorizationService.assertMember(req.user.userId, groupId);
-    return this.chatService.getGroupMessages(groupId);
+    await this.groupsAuthorizationService.assertMember(
+      req.user.userId,
+      groupId,
+    );
+    return this.chatService.getGroupMessages(groupId, query);
   }
 }
