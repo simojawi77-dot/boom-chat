@@ -139,7 +139,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-dvh bg-[var(--bg)] text-[var(--text-primary)] transition-colors duration-300">
+    <main className="min-h-dvh bg-(--bg) text-(--text-primary) transition-colors duration-300">
       <Navbar />
 
       <div className="flex min-h-[calc(100dvh-4rem)] items-center px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
@@ -148,7 +148,7 @@ export default function RegisterPage() {
             <form
               noValidate
               onSubmit={form.handleSubmit(submitRegistration)}
-              className="flex w-full flex-col rounded-[2rem] border border-[var(--border-soft)] bg-[var(--surface)] p-4 shadow-[var(--shadow-soft)] backdrop-blur-xl transition-colors duration-300 sm:p-5 lg:min-h-[min(760px,calc(100dvh-5rem))] lg:p-6"
+              className="flex w-full flex-col rounded-4xl border border-(--border-soft) bg-(--surface) p-4 shadow-(--shadow-soft) backdrop-blur-xl transition-colors duration-300 sm:p-5 lg:min-h-[min(760px,calc(100dvh-5rem))] lg:p-6"
             >
               <div className="mb-4 shrink-0 sm:mb-5">
                 <ProgressIndicator currentStep={step} />
@@ -164,7 +164,7 @@ export default function RegisterPage() {
                   {step === 6 && <Step6 />}
                 </div>
 
-                <div className="order-1 flex min-h-0 items-center justify-center rounded-[2rem] border border-[var(--border-soft)] bg-[var(--model)] p-3 sm:p-4 lg:order-2">
+                <div className="order-1 flex min-h-0 items-center justify-center rounded-4xl border border-(--border-soft) bg-(--model) p-3 sm:p-4 lg:order-2">
                   <AvatarPreview
                     imageSource={avatarDisplay.source}
                     label={avatarDisplay.label}
@@ -180,7 +180,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={goToPreviousStep}
                     aria-label="Go to previous step"
-                    className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-strong)] px-6 py-3 text-base font-bold text-[var(--text-primary)] transition duration-200 hover:bg-[var(--border-soft)]"
+                    className="rounded-2xl border border-(--border-soft) bg-(--surface-strong) px-6 py-3 text-base font-bold text-(--text-primary) transition duration-200 hover:bg-(--border-soft)"
                   >
                     Back
                   </button>
@@ -191,7 +191,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={goToNextStep}
                     aria-label={`Go to step ${step + 1}`}
-                    className="rounded-2xl bg-[var(--accent)] px-8 py-3 text-base font-black text-white shadow-lg shadow-purple-500/25 transition duration-200 hover:scale-[1.01] hover:shadow-purple-500/40"
+                    className="rounded-2xl bg-(--accent) px-8 py-3 text-base font-black text-white shadow-lg shadow-purple-500/25 transition duration-200 hover:scale-[1.01] hover:shadow-purple-500/40"
                   >
                     Next
                   </button>
@@ -200,7 +200,7 @@ export default function RegisterPage() {
                     type="submit"
                     aria-label="Create account"
                     disabled={isSubmitting}
-                    className="rounded-2xl bg-[var(--accent)] px-8 py-3 text-base font-black text-white shadow-lg shadow-purple-500/25 transition duration-200 hover:scale-[1.01] hover:shadow-purple-500/40 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="rounded-2xl bg-(--accent) px-8 py-3 text-base font-black text-white shadow-lg shadow-purple-500/25 transition duration-200 hover:scale-[1.01] hover:shadow-purple-500/40 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {isSubmitting ? "Creating account..." : "Create Account"}
                   </button>

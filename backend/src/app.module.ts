@@ -16,6 +16,8 @@ import { Group } from './groups/entities/group.entity';
 import { GroupMember } from './groups/entities/group-member.entity';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { GroupsModule } from './groups/groups.module';
+import { PostsModule } from './posts/posts.module';
+import { Post } from './posts/entities/post.entity';
 
 @Module({
   imports: [
@@ -30,12 +32,12 @@ import { GroupsModule } from './groups/groups.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get<string>('DB_USERNAME'),
-        password: config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_NAME'),
-        entities: [User, Message, Group, GroupMember],
+        host: config.get<string>('DB_HOST') ?? 'localhost',
+        port: Number(config.get<number>('DB_PORT') ?? 5432),
+        username: config.get<string>('DB_USERNAME') ?? 'postgres',
+        password: config.get<string>('DB_PASSWORD') ?? 'postgres',
+        database: config.get<string>('DB_NAME') ?? 'boom_chat',
+        entities: [User, Message, Group, GroupMember, Post],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),
     }),
@@ -45,6 +47,7 @@ import { GroupsModule } from './groups/groups.module';
     GroupsModule,
     ProfileModule,
     UploadModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [

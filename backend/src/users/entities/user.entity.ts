@@ -52,8 +52,8 @@ export class User {
   @Column({ type: 'text', nullable: true })
   bio?: string;
 
-  @Column({ nullable: true })
-  refreshTokenHash?: string;
+  @Column({ type: 'varchar', nullable: true })
+  refreshTokenHash: string | null;
 
   @CreateDateColumn()
   createdAt: Date;

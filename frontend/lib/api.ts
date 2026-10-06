@@ -14,8 +14,14 @@ export type CurrentUser = {
   displayName?: string;
   firstName?: string;
   lastName?: string;
+  gender?: string;
   city?: string;
+  dateOfBirth?: string;
+  phone?: string;
   avatarUrl?: string;
+  coverPhotoUrl?: string;
+  bio?: string;
+  createdAt?: string;
 };
 
 type AuthTokens = { accessToken: string; refreshToken: string; user?: CurrentUser };
@@ -156,6 +162,20 @@ async function request<T>(path: string, options: ApiRequestOptions = {}): Promis
   return data as T;
 }
 
+export function updateStoredCurrentUser(user: Partial<CurrentUser> | null) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (!user) {
+    localStorage.removeItem("currentUser");
+    return;
+  }
+
+  localStorage.setItem("currentUser", JSON.stringify(user));
+  window.dispatchEvent(new Event("auth:changed"));
+}
+
 export function storeAuthTokens(payload: AuthTokens) {
   if (typeof window === "undefined") {
     return;
@@ -163,7 +183,10 @@ export function storeAuthTokens(payload: AuthTokens) {
 
   localStorage.setItem("accessToken", payload.accessToken);
   localStorage.setItem("refreshToken", payload.refreshToken);
-  if (payload.user) localStorage.setItem("currentUser", JSON.stringify(payload.user));
+  if (payload.user) {
+    updateStoredCurrentUser(payload.user);
+  }
+  window.dispatchEvent(new Event("auth:changed"));
 }
 
 export function clearAuthTokens() {
@@ -174,6 +197,7 @@ export function clearAuthTokens() {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("currentUser");
+  window.dispatchEvent(new Event("auth:changed"));
 }
 
 export async function loginUser(email: string, password: string) {
@@ -209,18 +233,7 @@ export async function registerUser(payload: {
 }
 
 export async function fetchCurrentUser() {
-  return request<{
-    id: string;
-    username: string;
-    email: string;
-    displayName?: string;
-    firstName?: string;
-    lastName?: string;
-    gender?: string;
-    city?: string;
-    dateOfBirth?: string;
-    phone?: string;
-  }>("/profile/me");
+  return request<CurrentUser>('/profile/me');
 }
 
 export type Group = {
@@ -312,3 +325,24 @@ export function fetchConversation(
 export function sendMessage(payload: { receiverId?: string; groupId?: string; content: string }) { return request<Message>("/chat/messages", { method: "POST", body: JSON.stringify(payload) }); }
 
 export function updateMyProfile(payload: { displayName?: string; bio?: string }) { return request<CurrentUser & { bio?: string }>("/profile/me", { method: "PATCH", body: JSON.stringify(payload) }); }
+
+export type Post = {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  user: Pick<CurrentUser, "id" | "username" | "displayName" | "firstName" | "lastName" | "city" | "avatarUrl" | "bio"> | null;
+};
+
+export function fetchPosts(options: PaginationOptions = {}) {
+  const query = buildPaginationQuery(options);
+  return request<PaginatedResponse<Post>>(`/posts${query ? `?${query}` : ""}`);
+}
+
+export function createPost(content: string) {
+  return request<Post>("/posts", { method: "POST", body: JSON.stringify({ content }) });
+}
+
+export function deletePost(id: string) {
+  return request<{ success: boolean }>(`/posts/${id}`, { method: "DELETE" });
+}

@@ -5,12 +5,38 @@ import { JwtService } from '@nestjs/jwt';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { GroupsAuthorizationService } from '../groups/groups-authorization.service';
+import { GroupMember } from '../groups/entities/group-member.entity';
+import { Message } from './entities/message.entity';
+import { Server, Socket } from 'socket.io';
+
+type ChatServiceMock = {
+  saveMessage: jest.MockedFunction<
+    (
+      senderId: string,
+      content: string,
+      receiverId?: string | null,
+      groupId?: string | null,
+    ) => Promise<Pick<Message, 'id' | 'content'>>
+  >;
+};
+type GroupsAuthorizationServiceMock = {
+  assertMember: jest.MockedFunction<
+    (userId: string, groupId: string) => Promise<Pick<GroupMember, 'userId'>>
+  >;
+};
+type TestEmit = jest.MockedFunction<
+  (event: string, ...args: unknown[]) => void
+>;
+type TestServer = {
+  to: jest.MockedFunction<(room: string) => { emit: TestEmit }>;
+};
+type TestClient = Socket & { userId?: string };
 
 describe('ChatGateway', () => {
   let gateway: ChatGateway;
-  let chatService: Partial<ChatService>;
-  let groupsAuthorizationService: Partial<GroupsAuthorizationService>;
-  let server: { to: jest.Mock };
+  let chatService: ChatServiceMock;
+  let groupsAuthorizationService: GroupsAuthorizationServiceMock;
+  let server: TestServer;
 
   beforeEach(() => {
     chatService = {
@@ -22,14 +48,14 @@ describe('ChatGateway', () => {
     };
 
     gateway = new ChatGateway(
-      chatService as ChatService,
-      groupsAuthorizationService as GroupsAuthorizationService,
+      chatService as unknown as ChatService,
+      groupsAuthorizationService as unknown as GroupsAuthorizationService,
       {
         verifyAsync: jest.fn(),
-      } as JwtService,
+      } as unknown as JwtService,
       {
         get: jest.fn().mockReturnValue('test-secret'),
-      } as ConfigService,
+      } as unknown as ConfigService,
     );
 
     server = {
@@ -38,20 +64,22 @@ describe('ChatGateway', () => {
       }),
     };
 
-    gateway.server = server as any;
+    gateway.server = server as unknown as Server;
   });
 
   it('allows a member to join a group room', async () => {
-    (groupsAuthorizationService.assertMember as jest.Mock).mockResolvedValue({
+    groupsAuthorizationService.assertMember.mockResolvedValue({
       userId: 'user-1',
     });
 
     const client = {
       userId: 'user-1',
       join: jest.fn(),
-    } as any;
+    } as unknown as TestClient;
 
-    const result = await gateway.handleJoinGroup(client, { groupId: 'group-1' });
+    const result = await gateway.handleJoinGroup(client, {
+      groupId: 'group-1',
+    });
 
     expect(groupsAuthorizationService.assertMember).toHaveBeenCalledWith(
       'user-1',
@@ -62,29 +90,30 @@ describe('ChatGateway', () => {
   });
 
   it('rejects non-members from joining a group room', async () => {
-    (groupsAuthorizationService.assertMember as jest.Mock).mockRejectedValue(
+    groupsAuthorizationService.assertMember.mockRejectedValue(
       new ForbiddenException('Forbidden'),
     );
 
     const client = {
       userId: 'user-1',
       join: jest.fn(),
-    } as any;
+    } as unknown as TestClient;
 
-    await expect(gateway.handleJoinGroup(client, { groupId: 'group-1' })).rejects.toBeInstanceOf(
-      WsException,
-    );
+    await expect(
+      gateway.handleJoinGroup(client, { groupId: 'group-1' }),
+    ).rejects.toBeInstanceOf(WsException);
 
     expect(client.join).not.toHaveBeenCalled();
   });
 
   it('sends a sanitized group message for a member', async () => {
-    (groupsAuthorizationService.assertMember as jest.Mock).mockResolvedValue({
+    groupsAuthorizationService.assertMember.mockResolvedValue({
       userId: 'user-1',
     });
-    (chatService.saveMessage as jest.Mock).mockResolvedValue({
+    chatService.saveMessage.mockResolvedValue({
       id: 'message-1',
       content: 'hello',
+      groupId: 'group-1',
     });
 
     const emit = jest.fn();
@@ -93,7 +122,7 @@ describe('ChatGateway', () => {
     const client = {
       userId: 'user-1',
       emit: jest.fn(),
-    } as any;
+    } as unknown as TestClient;
 
     const result = await gateway.handleMessage(client, {
       groupId: 'group-1',
@@ -111,23 +140,32 @@ describe('ChatGateway', () => {
       'group-1',
     );
     expect(server.to).toHaveBeenCalledWith('group:group-1');
-    expect(emit).toHaveBeenCalledWith('newMessage', { id: 'message-1', content: 'hello' });
+    expect(emit).toHaveBeenCalledWith('newMessage', {
+      id: 'message-1',
+      content: 'hello',
+      groupId: 'group-1',
+    });
     expect(client.emit).toHaveBeenCalledWith('messageSent', {
       id: 'message-1',
       content: 'hello',
+      groupId: 'group-1',
     });
-    expect(result).toEqual({ id: 'message-1', content: 'hello' });
+    expect(result).toEqual({
+      id: 'message-1',
+      content: 'hello',
+      groupId: 'group-1',
+    });
   });
 
   it('rejects non-members from sending a group message', async () => {
-    (groupsAuthorizationService.assertMember as jest.Mock).mockRejectedValue(
+    groupsAuthorizationService.assertMember.mockRejectedValue(
       new ForbiddenException('Forbidden'),
     );
 
     const client = {
       userId: 'user-1',
       emit: jest.fn(),
-    } as any;
+    } as unknown as TestClient;
 
     await expect(
       gateway.handleMessage(client, {

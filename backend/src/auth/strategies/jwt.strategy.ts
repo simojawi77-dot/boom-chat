@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { getRequiredJwtSecret } from '../jwt-secrets';
 
 export interface JwtPayload {
   sub: string;
@@ -10,16 +11,8 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  private readonly logger = new Logger(JwtStrategy.name);
-
   constructor(configService: ConfigService) {
-    const secret = configService.get<string>('JWT_ACCESS_SECRET') || 'default_access_secret';
-    if (!configService.get<string>('JWT_ACCESS_SECRET')) {
-      Logger.warn(
-        'JWT_ACCESS_SECRET is not configured. Using fallback secret for local development only.',
-        JwtStrategy.name,
-      );
-    }
+    const secret = getRequiredJwtSecret(configService, 'JWT_ACCESS_SECRET');
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

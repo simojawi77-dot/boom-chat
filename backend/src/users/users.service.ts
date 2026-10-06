@@ -102,7 +102,7 @@ export class UsersService {
 
     if (normalizedQuery) {
       queryBuilder.andWhere(
-        '(LOWER(user.username) LIKE :query OR LOWER(COALESCE(user.displayName, \'\')) LIKE :query OR LOWER(COALESCE(user.city, \'\')) LIKE :query)',
+        "(LOWER(user.username) LIKE :query OR LOWER(COALESCE(user.displayName, '')) LIKE :query OR LOWER(COALESCE(user.city, '')) LIKE :query)",
         {
           query: `%${normalizedQuery}%`,
         },
@@ -162,18 +162,26 @@ export class UsersService {
     userId: string,
     refreshTokenHash: string | null,
   ): Promise<void> {
-    await this.usersRepository.update(userId, {
-      refreshTokenHash: refreshTokenHash ?? undefined,
-    });
+    if (refreshTokenHash === null) {
+      await this.usersRepository.update(userId, {
+        refreshTokenHash: () => 'NULL',
+      });
+      return;
+    }
+
+    await this.usersRepository.update(userId, { refreshTokenHash });
   }
 
   async updateProfile(
     userId: string,
     data: Partial<
-      Pick<User, 'displayName' | 'bio' | 'avatarUrl' | 'coverPhotoUrl'>
+      Record<
+        'displayName' | 'bio' | 'avatarUrl' | 'coverPhotoUrl',
+        string | null
+      >
     >,
   ): Promise<User> {
-    await this.usersRepository.update(userId, data);
+    await this.usersRepository.update(userId, data as never);
     const user = await this.findById(userId);
     if (!user) throw new NotFoundException('User not found');
     return user;
@@ -184,10 +192,7 @@ export class UsersService {
       return DEFAULT_USERS_QUERY_LIMIT;
     }
 
-    return Math.min(
-      MAX_USERS_QUERY_LIMIT,
-      Math.max(1, Math.trunc(limit)),
-    );
+    return Math.min(MAX_USERS_QUERY_LIMIT, Math.max(1, Math.trunc(limit)));
   }
 
   private encodeCursor(user: Pick<User, 'createdAt' | 'id'>) {

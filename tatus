@@ -1,0 +1,10 @@
+[33m202a182[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: improve auth security and add cursor pagination
+[33medf155c[m dklngdgkej
+[33m76d323a[m Initial commit
+[33mb67653e[m eevhe
+[33m12c7a41[m Initial commit
+[33m4f1e092[m Persist register/login profile data and display current user info on home page
+[33m7257b7b[m Merge: resolve conflict in register page - keep user's Navbar + pulled createUniqueUsername
+[33m4f5d808[m Merge branch 'main' of github.com:ayman7777771/Boom_chat.git
+[33m6c9dad8[m feat: add groups module with authorization and chat security fixes
+[33mda75f41[m yftydje

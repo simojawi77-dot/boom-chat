@@ -182,3 +182,28 @@ describe('UsersService pagination', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 });
+
+describe('UsersService refresh-token revocation', () => {
+  it('writes SQL NULL and clears the stored hash', async () => {
+    const row = { refreshTokenHash: 'stored-hash' as string | null };
+    const update = jest.fn(
+      async (
+        _userId: string,
+        values: { refreshTokenHash: string | (() => string) },
+      ) => {
+        const value = values.refreshTokenHash;
+        expect(typeof value).toBe('function');
+        expect(value()).toBe('NULL');
+        row.refreshTokenHash = null;
+      },
+    );
+    const service = new UsersService({ update } as never);
+
+    await service.setRefreshTokenHash('user-1', null);
+
+    expect(row.refreshTokenHash).toBeNull();
+    expect(update).toHaveBeenCalledWith('user-1', {
+      refreshTokenHash: expect.any(Function),
+    });
+  });
+});

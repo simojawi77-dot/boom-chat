@@ -20,7 +20,10 @@ export class ProfileService {
   }
 
   async updateMyProfile(userId: string, dto: UpdateProfileDto) {
-    const user = await this.usersService.updateProfile(userId, dto);
+    const user = await this.usersService.updateProfile(userId, {
+      displayName: this.normalizeEmptyString(dto.displayName),
+      bio: this.normalizeEmptyString(dto.bio),
+    });
     return this.toOwnProfile(user);
   }
 
@@ -68,5 +71,10 @@ export class ProfileService {
   private toPublicProfile(user: User) {
     const { id, username, displayName, avatarUrl, coverPhotoUrl, bio } = user;
     return { id, username, displayName, avatarUrl, coverPhotoUrl, bio };
+  }
+
+  private normalizeEmptyString(value?: string) {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : null;
   }
 }

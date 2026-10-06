@@ -5,14 +5,20 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import type { SignOptions } from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
+import { createHash, randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { getRequiredJwtSecret } from './jwt-secrets';
 
 export interface Tokens {
   accessToken: string;
   refreshToken: string;
+}
+
+function hashRefreshToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
 }
 
 @Injectable()
@@ -51,13 +57,16 @@ export class AuthService {
       throw new UnauthorizedException('Access denied');
     }
 
-    const matches = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    const matches = await bcrypt.compare(
+      hashRefreshToken(refreshToken),
+      user.refreshTokenHash,
+    );
     if (!matches) throw new UnauthorizedException('Access denied');
 
     // Rotation: issue a brand new pair and invalidate the old refresh token
     const tokens = await this.issueTokens(user.id, user.username);
     await this.persistRefreshToken(user.id, tokens.refreshToken);
-    return tokens;
+    return { user: this.sanitize(user), ...tokens };
   }
 
   async logout(userId: string) {
@@ -66,10 +75,10 @@ export class AuthService {
   }
 
   private async issueTokens(userId: string, username: string): Promise<Tokens> {
-    const payload = { sub: userId, username };
+    const payload = { sub: userId, username, jti: randomUUID() };
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+      secret: getRequiredJwtSecret(this.configService, 'JWT_ACCESS_SECRET'),
       expiresIn: this.configService.get<string>(
         'JWT_ACCESS_EXPIRES_IN',
         '15m',
@@ -77,7 +86,7 @@ export class AuthService {
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      secret: getRequiredJwtSecret(this.configService, 'JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>(
         'JWT_REFRESH_EXPIRES_IN',
         '7d',
@@ -88,7 +97,10 @@ export class AuthService {
   }
 
   private async persistRefreshToken(userId: string, refreshToken: string) {
-    const hash = await bcrypt.hash(refreshToken, 10);
+    // bcrypt truncates input at 72 bytes, and JWTs for the same user share
+    // their first 72 bytes — so raw-JWT hashes all collide. Hashing the full
+    // token to a fixed 64-char digest first makes each token distinguishable.
+    const hash = await bcrypt.hash(hashRefreshToken(refreshToken), 10);
     await this.usersService.setRefreshTokenHash(userId, hash);
   }
 
@@ -98,6 +110,9 @@ export class AuthService {
     email: string;
     displayName?: string;
     avatarUrl?: string;
+    coverPhotoUrl?: string;
+    bio?: string;
+    createdAt?: Date | string;
     firstName?: string;
     lastName?: string;
     gender?: string;
@@ -111,6 +126,9 @@ export class AuthService {
       email,
       displayName,
       avatarUrl,
+      coverPhotoUrl,
+      bio,
+      createdAt,
       firstName,
       lastName,
       gender,
@@ -125,6 +143,9 @@ export class AuthService {
       email,
       displayName,
       avatarUrl,
+      coverPhotoUrl,
+      bio,
+      createdAt,
       firstName,
       lastName,
       gender,

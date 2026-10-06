@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { AppNav } from "../sharedUi";
@@ -11,6 +11,7 @@ import {
   type DirectoryUser,
   type Message,
 } from "@/lib/api";
+import { connectChatSocket } from "@/lib/socket";
 import styles from "../home.module.css";
 
 export default function MessagesPage() {
@@ -20,12 +21,46 @@ export default function MessagesPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [text, setText] = useState("");
+  const socketRef = useRef<ReturnType<typeof connectChatSocket> | null>(null);
 
   useEffect(() => {
     searchUsers()
       .then((response) => setPeople(response.items))
       .catch((error) => toast.error(error.message));
   }, []);
+
+  useEffect(() => {
+    if (!active) {
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+      return;
+    }
+
+    const socket = connectChatSocket((message: Message) => {
+      setMessages((current) => {
+        if (current.some((entry) => entry.id === message.id)) {
+          return current;
+        }
+
+        const isForActiveConversation =
+          message.senderId === active.id || message.receiverId === active.id;
+
+        if (!isForActiveConversation) {
+          return current;
+        }
+
+        return [...current, message];
+      });
+    });
+
+    socketRef.current?.disconnect();
+    socketRef.current = socket;
+
+    return () => {
+      socket?.disconnect();
+      socketRef.current = null;
+    };
+  }, [active]);
 
   useEffect(() => {
     if (!active) {

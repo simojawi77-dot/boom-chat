@@ -15,9 +15,14 @@ import { WsException } from '@nestjs/websockets';
 import { GroupsAuthorizationService } from '../groups/groups-authorization.service';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { Message } from './entities/message.entity';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
+}
+
+interface GatewayJwtPayload {
+  sub: string;
 }
 
 @WebSocketGateway({
@@ -46,22 +51,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
-      const token =
-        client.handshake.auth?.token ||
-        client.handshake.headers?.authorization?.toString().replace('Bearer ', '');
+      const authToken: unknown = client.handshake.auth?.token;
+      const headerToken = client.handshake.headers?.authorization
+        ?.toString()
+        .replace('Bearer ', '');
+      const token = typeof authToken === 'string' ? authToken : headerToken;
 
       if (!token) {
         client.disconnect();
         return;
       }
 
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-      });
+      const payload = await this.jwtService.verifyAsync<GatewayJwtPayload>(
+        token,
+        {
+          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+        },
+      );
 
       client.userId = payload.sub;
       this.onlineUsers.set(payload.sub, client.id);
-      client.join(payload.sub); // personal room, makes targeted emits simple
+      void client.join(payload.sub); // personal room, makes targeted emits simple
 
       this.logger.log(`User ${payload.sub} connected`);
     } catch {
@@ -101,15 +111,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       dto.groupId ?? null,
     );
 
-    if (dto.groupId) {
-      this.server.to(`group:${dto.groupId}`).emit('newMessage', message);
-    } else if (dto.receiverId) {
-      this.server.to(dto.receiverId).emit('newMessage', message);
-    }
+    this.emitNewMessage(message);
 
     client.emit('messageSent', message);
 
     return message;
+  }
+
+  // Shared by the socket handler and the REST controller so both send paths
+  // deliver in real time.
+  emitNewMessage(message: Message) {
+    if (!this.server) {
+      return;
+    }
+
+    if (message.groupId) {
+      this.server.to(`group:${message.groupId}`).emit('newMessage', message);
+    } else if (message.receiverId) {
+      this.server.to(message.receiverId).emit('newMessage', message);
+    }
   }
 
   @SubscribeMessage('joinGroup')
@@ -119,7 +139,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     if (!client.userId) return;
     await this.assertGroupMemberOrThrow(client.userId, data.groupId);
-    client.join(`group:${data.groupId}`);
+    void client.join(`group:${data.groupId}`);
     return { groupId: data.groupId };
   }
 
@@ -162,7 +182,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private sanitizeMessageContent(content: string) {
-    return content.replace(/\u0000/g, '').trim();
+    return content.split('\u0000').join('').trim();
   }
 
   private async assertGroupMemberOrThrow(userId: string, groupId: string) {
